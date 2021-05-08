@@ -126,6 +126,9 @@ fn run_tests(tests: &Vec<String>) -> bool {
     let mut account = RefCell::new(AccountSharedData::default());
     for program in tests {
         let path = PathBuf::from(&program);
+        if !path.exists() {
+            continue;
+        }
         let mut file = File::open(path).unwrap();
         let mut data = vec![];
         file.read_to_end(&mut data).unwrap();
@@ -178,7 +181,7 @@ fn main() {
     solana_logger::setup();
     let mut args = env::args().collect::<Vec<_>>();
     if let Some(arg1) = args.get(1) {
-        if arg1 == "bpf-tests-driver" {
+        if arg1 == "run-bpf-tests" {
             args.remove(1);
         }
     }
