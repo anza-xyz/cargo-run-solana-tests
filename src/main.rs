@@ -88,7 +88,7 @@ where
         let linker = home
             .join(".cache")
             .join("solana")
-            .join("v1.6")
+            .join("v1.7")
             .join("bpf-tools")
             .join("llvm")
             .join("bin")
