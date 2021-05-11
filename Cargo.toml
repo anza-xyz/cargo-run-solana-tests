@@ -20,3 +20,7 @@ solana_rbpf = "0.2.8"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
+
+[[bin]]
+name = "cargo-run-bpf-tests"
+path = "src/main.rs"
