@@ -69,45 +69,6 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
-    let rustflags = env::var("RUSTFLAGS").unwrap_or_else(|_| {
-        let home = PathBuf::from(env::var("HOME").unwrap_or_else(|err| {
-            eprintln!("Can't get home directory path: {}", err);
-            exit(1);
-        }));
-        let linker_script = home
-            .join(".local")
-            .join("share")
-            .join("solana")
-            .join("install")
-            .join("active_release")
-            .join("bin")
-            .join("sdk")
-            .join("bpf")
-            .join("rust")
-            .join("bpf.ld");
-        let linker = home
-            .join(".cache")
-            .join("solana")
-            .join("v1.7")
-            .join("bpf-tools")
-            .join("llvm")
-            .join("bin")
-            .join("ld.lld");
-        let mut rustflags = String::from("-C link-arg=-z");
-        rustflags.push_str(" -C link-arg=notext");
-        rustflags.push_str(" -C link-arg=-T");
-        rustflags.push_str(linker_script.to_str().unwrap());
-        rustflags.push_str(" -C link-arg=--Bdynamic");
-        rustflags.push_str(" -C link-arg=-shared");
-        rustflags.push_str(" -C link-arg=--threads=1");
-        rustflags.push_str(" -C link-arg=--entry=entrypoint");
-        rustflags.push_str(" -C linker=");
-        rustflags.push_str(linker.to_str().unwrap());
-        env::set_var("RUSTFLAGS", rustflags.clone());
-        rustflags
-    });
-    println!("RUSTFLAGS=\"{}\"", rustflags);
-
     let cargo = PathBuf::from("cargo");
     let mut cargo_args = vec![
         "+bpf",
@@ -121,6 +82,15 @@ where
         cargo_args.push(arg.as_ref().to_str().unwrap_or(""));
     }
     spawn(&cargo, &cargo_args)
+}
+
+fn cargo_test_failed(cargo_output: &String) -> bool {
+    let expected = Regex::new(r"error: test failed, to rerun pass '--test .+'").unwrap();
+    if !expected.is_match(cargo_output) {
+        eprintln!("{}", cargo_output);
+        return true;
+    }
+    false
 }
 
 /**
@@ -228,6 +198,9 @@ fn main() {
         args.remove(0);
     }
     let cargo_output = run_cargo_test(&args);
+    if cargo_test_failed(&cargo_output) {
+        exit(1);
+    }
     let tests_list = extract_tests_list(&cargo_output);
     let failed = run_tests(&tests_list);
     if failed {
