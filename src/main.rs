@@ -31,7 +31,7 @@ use std::{
 /**
  * Start a new process running the program and capturing its output.
  */
-fn spawn<I, S>(program: &Path, args: I) -> String
+fn spawn<I, S>(program: &Path, args: I) -> (String, String)
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
@@ -46,6 +46,7 @@ where
     let child = Command::new(program)
         .args(&args)
         .stderr(Stdio::piped())
+        .stdout(Stdio::piped())
         .spawn()
         .unwrap_or_else(|err| {
             eprintln!("Failed to execute {}: {}", program.display(), err);
@@ -53,12 +54,20 @@ where
         });
 
     let output = child.wait_with_output().expect("failed to wait on child");
-    output
-        .stderr
-        .as_slice()
-        .iter()
-        .map(|&c| c as char)
-        .collect::<String>()
+    (
+        output
+            .stdout
+            .as_slice()
+            .iter()
+            .map(|&c| c as char)
+            .collect::<String>(),
+        output
+            .stderr
+            .as_slice()
+            .iter()
+            .map(|&c| c as char)
+            .collect::<String>()
+    )
 }
 
 /**
@@ -81,7 +90,7 @@ where
     for arg in args.iter() {
         cargo_args.push(arg.as_ref().to_str().unwrap_or(""));
     }
-    spawn(&cargo, &cargo_args)
+    spawn(&cargo, &cargo_args).1
 }
 
 fn cargo_test_failed(cargo_output: &String) -> bool {
@@ -118,6 +127,46 @@ fn extract_tests_list(output: &String) -> Vec<String> {
     result
 }
 
+fn extract_sections_list(output: &String) -> Vec<String> {
+    let head_re = Regex::new(r"^ +\[[ 0-9]+\] (.bss[^ ]*) .*").unwrap();
+    let mut result: Vec<String> = Vec::new();
+    let lines = output.lines().collect::<Vec<_>>();
+    for line in lines {
+        let line = line.trim_end();
+        if head_re.is_match(line) {
+            let captures = head_re.captures(line).unwrap();
+            result.push(format!("{}", captures[1].to_string()));
+        }
+    }
+    result
+}
+
+fn remove_bss_sections(module: &String) {
+    let home_dir = PathBuf::from(env::var("HOME").unwrap_or_else(|err| {
+        eprintln!("Can't get home directory path: {}", err);
+        exit(1);
+    }));
+    let llvm_path = home_dir
+        .join(".cache")
+        .join("solana")
+        .join("v1.9")
+        .join("bpf-tools")
+        .join("llvm")
+        .join("bin");
+    let readelf = llvm_path.join("llvm-readelf");
+    let mut readelf_args = vec!["--section-headers"];
+    readelf_args.push(module);
+    let output = spawn(&readelf, &readelf_args).0;
+    let sections = extract_sections_list(&output);
+    for bss in sections {
+        let objcopy = llvm_path.join("llvm-objcopy");
+        let mut objcopy_args = vec!["--remove-section"];
+        objcopy_args.push(&bss);
+        objcopy_args.push(module);
+        spawn(&objcopy, &objcopy_args);
+    }
+}
+
 /**
  * Execute the test binary modules in RBPF.
  */
@@ -138,6 +187,7 @@ fn run_tests(tests: &Vec<String>) -> bool {
         if !path.exists() {
             continue;
         }
+        remove_bss_sections(&program);
         let mut file = File::open(path).unwrap();
         let mut data = vec![];
         file.read_to_end(&mut data).unwrap();
