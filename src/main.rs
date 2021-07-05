@@ -149,7 +149,7 @@ fn remove_bss_sections(module: &String) {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.9")
+        .join("v1.12")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
