@@ -149,7 +149,7 @@ fn remove_bss_sections(module: &String) {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.12")
+        .join("v1.13")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
@@ -174,9 +174,8 @@ fn run_tests(tests: &Vec<String>) -> bool {
     let mut failed = false;
     let config = Config {
         max_call_depth: 100,
-        stack_frame_size: 4096,
-        enable_instruction_meter: true,
         enable_instruction_tracing: false,
+        ..Config::default()
     };
     let loader_id = bpf_loader::id();
     let key = solana_sdk::pubkey::new_rand();
@@ -199,8 +198,8 @@ fn run_tests(tests: &Vec<String>) -> bool {
         let logger = invoke_context.logger.clone();
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
-        let mut executable = <dyn Executable<BpfError, ThisInstructionMeter>>::from_elf(&data, None, config).unwrap();
-        executable.set_syscall_registry(register_syscalls(&mut invoke_context).unwrap());
+        let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
+        let mut executable = <dyn Executable<BpfError, ThisInstructionMeter>>::from_elf(&data, None, config, syscall_registry).unwrap();
         executable.jit_compile().unwrap();
         let mut parameters = parameters.clone();
         let mut vm = create_vm(&loader_id, executable.as_ref(), parameters.as_slice_mut(), &mut invoke_context).unwrap();
