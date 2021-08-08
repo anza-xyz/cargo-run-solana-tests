@@ -94,7 +94,7 @@ where
 }
 
 fn cargo_test_failed(cargo_output: &String) -> bool {
-    let expected = Regex::new(r"error: test failed, to rerun pass '--test .+'").unwrap();
+    let expected = Regex::new(r"error: test failed, to rerun pass '.+'").unwrap();
     if !expected.is_match(cargo_output) {
         eprintln!("{}", cargo_output);
         return true;
@@ -106,7 +106,7 @@ fn cargo_test_failed(cargo_output: &String) -> bool {
  * Extract the list of binary modules built by cargo test from the command's output.
  */
 fn extract_tests_list(output: &String) -> Vec<String> {
-    let rust_re = Regex::new(r"^\s*Running `rustc .*--target bpfel-unknown-unknown.+").unwrap();
+    let rust_re = Regex::new(r"^\s*Running `[^ ]*rustc .*--target bpfel-unknown-unknown.+").unwrap();
     let odir_re = Regex::new(r"^.+--out-dir ([^ ]+).+").unwrap();
     let name_re = Regex::new(r"^.+--crate-name ([^ ]+).+-C extra-filename=([^ ]+).+").unwrap();
     let mut result: Vec<String> = Vec::new();
@@ -149,7 +149,7 @@ fn remove_bss_sections(module: &String) {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.13")
+        .join("v1.14")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
@@ -167,6 +167,33 @@ fn remove_bss_sections(module: &String) {
     }
 }
 
+fn is_executable(module: &String) -> bool {
+    let home_dir = PathBuf::from(env::var("HOME").unwrap_or_else(|err| {
+        eprintln!("Can't get home directory path: {}", err);
+        exit(1);
+    }));
+    let llvm_path = home_dir
+        .join(".cache")
+        .join("solana")
+        .join("v1.14")
+        .join("bpf-tools")
+        .join("llvm")
+        .join("bin");
+    let readelf = llvm_path.join("llvm-readelf");
+    let mut readelf_args = vec!["--section-headers"];
+    readelf_args.push(module);
+    let output = spawn(&readelf, &readelf_args).0;
+    let head_re = Regex::new(r"^ +\[[ 0-9]+\] (.text[^ ]*) .*").unwrap();
+    let lines = output.lines().collect::<Vec<_>>();
+    for line in lines {
+        let line = line.trim_end();
+        if head_re.is_match(line) {
+            return true
+        }
+    }
+    false
+}
+
 /**
  * Execute the test binary modules in RBPF.
  */
@@ -182,8 +209,10 @@ fn run_tests(tests: &Vec<String>) -> bool {
     let program_id = solana_sdk::pubkey::new_rand();
     let mut account = RefCell::new(AccountSharedData::default());
     for program in tests {
+        eprintln!("Considering {}", program);
         let path = PathBuf::from(&program);
-        if !path.exists() {
+        if !path.exists() || !is_executable(&program) {
+            eprintln!("  Skipping...");
             continue;
         }
         remove_bss_sections(&program);
@@ -247,10 +276,15 @@ fn main() {
         args.remove(0);
     }
     let cargo_output = run_cargo_test(&args);
+    println!("cargo test output:\n{}", cargo_output);
     if cargo_test_failed(&cargo_output) {
         exit(1);
     }
     let tests_list = extract_tests_list(&cargo_output);
+    println!("Found the following tests");
+    for test in &tests_list {
+        println!("  {}", test);
+    }
     let failed = run_tests(&tests_list);
     if failed {
         exit(1);
