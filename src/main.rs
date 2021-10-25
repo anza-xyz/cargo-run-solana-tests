@@ -149,7 +149,7 @@ fn remove_bss_sections(module: &String) {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.15")
+        .join("v1.17")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
@@ -175,7 +175,7 @@ fn is_executable(module: &String) -> bool {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.15")
+        .join("v1.17")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
