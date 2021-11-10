@@ -5,6 +5,7 @@ use solana_bpf_loader_program::{
     syscalls::register_syscalls,
     ThisInstructionMeter,
 };
+use solana_program_runtime::invoke_context::{prepare_mock_invoke_context, ThisInvokeContext};
 use solana_rbpf::vm::{
     Config,
     Executable
@@ -13,12 +14,11 @@ use solana_sdk::{
     account::AccountSharedData,
     bpf_loader,
     entrypoint::SUCCESS,
-    keyed_account::KeyedAccount,
-    process_instruction::{InvokeContext, MockInvokeContext},
+    process_instruction::InvokeContext,
+    pubkey::Pubkey,
 };
 use regex::Regex;
 use std::{
-    cell::RefCell,
     env,
     ffi::OsStr,
     fs::File,
@@ -149,7 +149,7 @@ fn remove_bss_sections(module: &String) {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.17")
+        .join("v1.18")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
@@ -175,7 +175,7 @@ fn is_executable(module: &String) -> bool {
     let llvm_path = home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.17")
+        .join("v1.18")
         .join("bpf-tools")
         .join("llvm")
         .join("bin");
@@ -205,9 +205,21 @@ fn run_tests(tests: &Vec<String>) -> bool {
         ..Config::default()
     };
     let loader_id = bpf_loader::id();
-    let key = solana_sdk::pubkey::new_rand();
-    let program_id = solana_sdk::pubkey::new_rand();
-    let mut account = RefCell::new(AccountSharedData::default());
+    let keyed_accounts = vec![
+        (
+            false,
+            false,
+            loader_id,
+            AccountSharedData::new_ref(0, 0, &solana_sdk::native_loader::id()),
+        ),
+        (
+            false,
+            false,
+            Pubkey::new_unique(),
+            AccountSharedData::new_ref(0, 0, &loader_id),
+        ),
+    ];
+    let instruction_data = vec![];
     for program in tests {
         eprintln!("Considering {}", program);
         let path = PathBuf::from(&program);
@@ -219,26 +231,50 @@ fn run_tests(tests: &Vec<String>) -> bool {
         let mut file = File::open(path).unwrap();
         let mut data = vec![];
         file.read_to_end(&mut data).unwrap();
-        let accounts = vec![KeyedAccount::new(&key, false, &mut account)];
-        let parameters = serialize_parameters(&bpf_loader::id(), &program_id, &accounts, &[]).unwrap();
         // Make new context for every test module, otherwise log messages from previous runs accumulate.
         // DO NOT move outside the loop.
-        let mut invoke_context = MockInvokeContext::new(accounts);
-        let logger = invoke_context.logger.clone();
+        let program_indices = [0, 1];
+        let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
+        let mut invoke_context = ThisInvokeContext::new_mock(&preparation.accounts, &[]);
+        invoke_context
+            .push(
+                &preparation.message,
+                &preparation.message.instructions[0],
+                &program_indices,
+                Some(&preparation.account_indices),
+            )
+            .unwrap();
+        let keyed_accounts = invoke_context.get_keyed_accounts().unwrap();
+        let (mut parameter_bytes, account_lengths) = serialize_parameters(
+            keyed_accounts[0].unsigned_key(),
+            keyed_accounts[1].unsigned_key(),
+            &keyed_accounts[2..],
+            &instruction_data,
+        )
+            .unwrap();
+
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
         let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
-        let mut executable = <dyn Executable<BpfError, ThisInstructionMeter>>::from_elf(&data, None, config, syscall_registry).unwrap();
+        let mut executable = <dyn Executable<BpfError, ThisInstructionMeter>>::from_elf(
+            &data,
+            None,
+            config,
+            syscall_registry
+        )
+            .unwrap();
         executable.jit_compile().unwrap();
-        let mut parameters = parameters.clone();
-        let mut vm = create_vm(&loader_id, executable.as_ref(), parameters.as_slice_mut(), &mut invoke_context).unwrap();
+        let mut vm = create_vm(
+            &loader_id,
+            executable.as_ref(),
+            parameter_bytes.as_slice_mut(),
+            &mut invoke_context,
+            &account_lengths,
+        ).unwrap();
         let start_time = Instant::now();
         let result = vm.execute_program_jit(&mut instruction_meter);
         let instruction_count = vm.get_total_instruction_count();
         println!("Executed {} {} instructions in {:.2}s.", program, instruction_count, start_time.elapsed().as_secs_f64());
-        for s in logger.log.borrow_mut().iter() {
-            println!("{}", s);
-        }
         match result {
             Err(e) => {
                 println!("FAILURE {}\n", e);
