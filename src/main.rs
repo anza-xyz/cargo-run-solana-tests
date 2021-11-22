@@ -1,30 +1,21 @@
+use regex::Regex;
 use solana_bpf_loader_program::{
-    BpfError,
-    create_vm,
-    serialization::serialize_parameters,
-    syscalls::register_syscalls,
+    create_vm, serialization::serialize_parameters, syscalls::register_syscalls, BpfError,
     ThisInstructionMeter,
 };
 use solana_program_runtime::invoke_context::{prepare_mock_invoke_context, ThisInvokeContext};
-use solana_rbpf::vm::{
-    Config,
-    Executable
-};
+use solana_rbpf::vm::{Config, Executable};
 use solana_sdk::{
-    account::AccountSharedData,
-    bpf_loader,
-    entrypoint::SUCCESS,
-    process_instruction::InvokeContext,
-    pubkey::Pubkey,
+    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
+    process_instruction::InvokeContext, pubkey::Pubkey,
 };
-use regex::Regex;
 use std::{
     env,
     ffi::OsStr,
     fs::File,
     io::Read,
     path::{Path, PathBuf},
-    process::{Command, exit, Stdio},
+    process::{exit, Command, Stdio},
     time::Instant,
 };
 
@@ -66,7 +57,7 @@ where
             .as_slice()
             .iter()
             .map(|&c| c as char)
-            .collect::<String>()
+            .collect::<String>(),
     )
 }
 
@@ -79,13 +70,7 @@ where
     S: AsRef<OsStr>,
 {
     let cargo = PathBuf::from("cargo");
-    let mut cargo_args = vec![
-        "+bpf",
-        "test",
-        "-v",
-        "--target",
-        "bpfel-unknown-unknown",
-    ];
+    let mut cargo_args = vec!["+bpf", "test", "-v", "--target", "bpfel-unknown-unknown"];
     let args = args.into_iter().collect::<Vec<_>>();
     for arg in args.iter() {
         cargo_args.push(arg.as_ref().to_str().unwrap_or(""));
@@ -106,7 +91,8 @@ fn cargo_test_failed(cargo_output: &String) -> bool {
  * Extract the list of binary modules built by cargo test from the command's output.
  */
 fn extract_tests_list(output: &String) -> Vec<String> {
-    let rust_re = Regex::new(r"^\s*Running `[^ ]*rustc .*--target bpfel-unknown-unknown.+").unwrap();
+    let rust_re =
+        Regex::new(r"^\s*Running `[^ ]*rustc .*--target bpfel-unknown-unknown.+").unwrap();
     let odir_re = Regex::new(r"^.+--out-dir ([^ ]+).+").unwrap();
     let name_re = Regex::new(r"^.+--crate-name ([^ ]+).+-C extra-filename=([^ ]+).+").unwrap();
     let mut result: Vec<String> = Vec::new();
@@ -119,7 +105,12 @@ fn extract_tests_list(output: &String) -> Vec<String> {
                 let base = captures[1].to_string();
                 if name_re.is_match(line) {
                     let captures = name_re.captures(line).unwrap();
-                    result.push(format!("{}/{}{}.so", base, captures[1].to_string(), captures[2].to_string()));
+                    result.push(format!(
+                        "{}/{}{}.so",
+                        base,
+                        captures[1].to_string(),
+                        captures[2].to_string()
+                    ));
                 }
             }
         }
@@ -188,7 +179,7 @@ fn is_executable(module: &String) -> bool {
     for line in lines {
         let line = line.trim_end();
         if head_re.is_match(line) {
-            return true
+            return true;
         }
     }
     false
@@ -251,7 +242,7 @@ fn run_tests(tests: &Vec<String>) -> bool {
             &keyed_accounts[2..],
             &instruction_data,
         )
-            .unwrap();
+        .unwrap();
 
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
@@ -260,9 +251,9 @@ fn run_tests(tests: &Vec<String>) -> bool {
             &data,
             None,
             config,
-            syscall_registry
+            syscall_registry,
         )
-            .unwrap();
+        .unwrap();
         executable.jit_compile().unwrap();
         let mut vm = create_vm(
             &loader_id,
@@ -270,11 +261,17 @@ fn run_tests(tests: &Vec<String>) -> bool {
             parameter_bytes.as_slice_mut(),
             &mut invoke_context,
             &account_lengths,
-        ).unwrap();
+        )
+        .unwrap();
         let start_time = Instant::now();
         let result = vm.execute_program_jit(&mut instruction_meter);
         let instruction_count = vm.get_total_instruction_count();
-        println!("Executed {} {} instructions in {:.2}s.", program, instruction_count, start_time.elapsed().as_secs_f64());
+        println!(
+            "Executed {} {} instructions in {:.2}s.",
+            program,
+            instruction_count,
+            start_time.elapsed().as_secs_f64()
+        );
         match result {
             Err(e) => {
                 println!("FAILURE {}\n", e);
@@ -284,10 +281,12 @@ fn run_tests(tests: &Vec<String>) -> bool {
                 if false {
                     let trace = File::create("trace.out").unwrap();
                     let mut trace = BufWriter::new(trace);
-                    let analysis = solana_rbpf::static_analysis::Analysis::from_executable(executable.as_ref());
+                    let analysis = solana_rbpf::static_analysis::Analysis::from_executable(
+                        executable.as_ref(),
+                    );
                     vm.get_tracer().write(&mut trace, &analysis).unwrap();
                 }
-            },
+            }
             Ok(v) => {
                 if v == SUCCESS {
                     println!("SUCCESS\n");
