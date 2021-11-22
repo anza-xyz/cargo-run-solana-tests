@@ -3,12 +3,11 @@ use solana_bpf_loader_program::{
     create_vm, serialization::serialize_parameters, syscalls::register_syscalls, BpfError,
     ThisInstructionMeter,
 };
-use solana_program_runtime::invoke_context::{prepare_mock_invoke_context, ThisInvokeContext};
-use solana_rbpf::vm::{Config, Executable};
-use solana_sdk::{
-    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
-    process_instruction::InvokeContext, pubkey::Pubkey,
+use solana_program_runtime::invoke_context::{
+    prepare_mock_invoke_context, InvokeContext, ThisInvokeContext,
 };
+use solana_rbpf::vm::{Config, Executable};
+use solana_sdk::{account::AccountSharedData, bpf_loader, entrypoint::SUCCESS, pubkey::Pubkey};
 use std::{
     env,
     ffi::OsStr,
