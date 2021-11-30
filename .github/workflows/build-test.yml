@@ -1,0 +1,21 @@
+name: Build
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run clippy
+        run: cargo clippy
+
+      - name: Run tests
+        run: RUST_BACKTRACE=full cargo test --verbose
+
+      - name: Build
+        run: cargo build
