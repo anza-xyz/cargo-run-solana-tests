@@ -23,7 +23,7 @@ use solana_program_runtime::{
     invoke_context::{prepare_mock_invoke_context, ComputeMeter, InvokeContext, ThisInvokeContext},
     log_collector::LogCollector,
 };
-use solana_rbpf::vm::{Config, Executable};
+use solana_rbpf::{elf::Executable, vm::Config};
 use solana_sdk::{
     account::AccountSharedData, bpf_loader, compute_budget::ComputeBudget, entrypoint::SUCCESS,
     feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
@@ -174,7 +174,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
         let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
-        let mut executable = <dyn Executable<BpfError, ThisInstructionMeter>>::from_elf(
+        let mut executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
             &data,
             None,
             config,
@@ -184,7 +184,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
         executable.jit_compile().unwrap();
         let mut vm = create_vm(
             &loader_id,
-            executable.as_ref(),
+            &executable,
             parameter_bytes.as_slice_mut(),
             &mut invoke_context,
             &account_lengths,
