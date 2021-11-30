@@ -51,7 +51,7 @@ where
     ))
 }
 
-fn extract_sections_list(output: &String) -> Vec<String> {
+fn extract_sections_list(output: &str) -> Vec<String> {
     let head_re = Regex::new(r"^ +\[[ 0-9]+\] (.bss[^ ]*) .*").unwrap();
 
     let mut result: Vec<String> = Vec::new();
