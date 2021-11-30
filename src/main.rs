@@ -20,9 +20,7 @@ use solana_bpf_loader_program::{
 };
 use solana_program_runtime::{
     instruction_processor::Executors,
-    invoke_context::{
-        prepare_mock_invoke_context, InvokeContext, ThisComputeMeter, ThisInvokeContext,
-    },
+    invoke_context::{prepare_mock_invoke_context, ComputeMeter, InvokeContext, ThisInvokeContext},
     log_collector::LogCollector,
 };
 use solana_rbpf::vm::{Config, Executable};
@@ -134,7 +132,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
 
     let program_indices = [0, 1];
     let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
-    let logs = Rc::new(LogCollector::default());
+    let logs = Rc::new(RefCell::new(LogCollector::default()));
     let result = {
         let mut invoke_context = ThisInvokeContext::new(
             Rent::default(),
@@ -146,7 +144,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
                 heap_size: Some(50 * 1024 * 1024),
                 ..ComputeBudget::default()
             },
-            ThisComputeMeter::new_ref(std::i64::MAX as u64),
+            ComputeMeter::new_ref(std::i64::MAX as u64),
             Rc::new(RefCell::new(Executors::default())),
             None,
             Arc::new(FeatureSet::all_enabled()),
@@ -206,7 +204,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
     };
 
     if let Ok(logs) = Rc::try_unwrap(logs) {
-        for message in Vec::from(logs) {
+        for message in Vec::from(logs.into_inner()) {
             let _ = io::stdout().write_all(message.replace("Program log: ", "").as_bytes());
         }
     }
