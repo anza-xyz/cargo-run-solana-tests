@@ -19,8 +19,7 @@ use solana_bpf_loader_program::{
     ThisInstructionMeter,
 };
 use solana_program_runtime::{
-    instruction_processor::Executors,
-    invoke_context::{prepare_mock_invoke_context, ComputeMeter, InvokeContext, ThisInvokeContext},
+    invoke_context::{prepare_mock_invoke_context, Executors, InvokeContext},
     log_collector::LogCollector,
 };
 use solana_rbpf::{elf::Executable, vm::Config};
@@ -132,21 +131,20 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
 
     let program_indices = [0, 1];
     let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
-    let logs = Rc::new(RefCell::new(LogCollector::default()));
+    let logs = LogCollector::new_ref();
     let result = {
-        let mut invoke_context = ThisInvokeContext::new(
+        let mut invoke_context = InvokeContext::new(
             Rent::default(),
             &preparation.accounts,
             &[],
             &[],
             Some(Rc::clone(&logs)),
             ComputeBudget {
+                max_units: i64::MAX as u64,
                 heap_size: Some(50 * 1024 * 1024),
                 ..ComputeBudget::default()
             },
-            ComputeMeter::new_ref(std::i64::MAX as u64),
             Rc::new(RefCell::new(Executors::default())),
-            None,
             Arc::new(FeatureSet::all_enabled()),
             Hash::default(),
             0,
@@ -157,7 +155,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
                 &preparation.message,
                 &preparation.message.instructions[0],
                 &program_indices,
-                Some(&preparation.account_indices),
+                &preparation.account_indices,
             )
             .unwrap();
 
@@ -183,7 +181,6 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
         .unwrap();
         executable.jit_compile().unwrap();
         let mut vm = create_vm(
-            &loader_id,
             &executable,
             parameter_bytes.as_slice_mut(),
             &mut invoke_context,
