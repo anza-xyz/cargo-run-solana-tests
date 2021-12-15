@@ -179,7 +179,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
             syscall_registry,
         )
         .unwrap();
-        executable.jit_compile().unwrap();
+        Executable::<BpfError, ThisInstructionMeter>::jit_compile(&mut executable).unwrap();
         let mut vm = create_vm(
             &executable,
             parameter_bytes.as_slice_mut(),
