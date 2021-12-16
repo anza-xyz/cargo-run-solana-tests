@@ -102,6 +102,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
     let config = Config {
         max_call_depth: 100,
         enable_instruction_tracing: false,
+        reject_all_writable_sections: true,
         ..Config::default()
     };
     let loader_id = bpf_loader::id();
