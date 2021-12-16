@@ -134,7 +134,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
 
     let program_indices = [0, 1];
     let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
-    let logs = LogCollector::new_ref();
+    let logs = LogCollector::new_ref_with_limit(None);
     let result = {
         let mut invoke_context = InvokeContext::new(
             Rent::default(),
