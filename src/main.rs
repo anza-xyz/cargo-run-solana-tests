@@ -98,7 +98,9 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
 }
 
 // Execute the given test file in RBPF.
-fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
+fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
+    let path = opt.file.with_extension("so");
+
     let config = Config {
         max_call_depth: 100,
         enable_instruction_tracing: false,
@@ -127,8 +129,8 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
         ));
     }
 
-    remove_bss_sections(path)?;
-    let data = fs::read(path)?;
+    remove_bss_sections(&path)?;
+    let data = fs::read(&path)?;
 
     let program_indices = [0, 1];
     let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
@@ -142,7 +144,7 @@ fn run_tests(path: &Path) -> Result<(), anyhow::Error> {
             Some(Rc::clone(&logs)),
             ComputeBudget {
                 max_units: i64::MAX as u64,
-                heap_size: Some(50 * 1024 * 1024),
+                heap_size: opt.heap_size,
                 ..ComputeBudget::default()
             },
             Rc::new(RefCell::new(Executors::default())),
@@ -237,6 +239,9 @@ struct Opt {
     #[allow(dead_code)]
     #[structopt(long, hidden = true)]
     quiet: bool,
+    /// RBPF heap size
+    #[structopt(long)]
+    heap_size: Option<usize>,
     #[structopt(parse(from_os_str))]
     file: PathBuf,
 }
@@ -251,7 +256,7 @@ fn main() {
     }
 
     let opt = Opt::from_iter(&args);
-    if let Err(e) = run_tests(&opt.file.with_extension("so")) {
+    if let Err(e) = run_tests(opt) {
         eprintln!("error: {:#}", e);
         exit(1);
     }
