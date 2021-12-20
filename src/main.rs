@@ -108,20 +108,18 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         ..Config::default()
     };
     let loader_id = bpf_loader::id();
-    let keyed_accounts = vec![
+    let transaction_accounts = vec![
         (
-            false,
-            false,
             loader_id,
-            AccountSharedData::new_ref(0, 0, &solana_sdk::native_loader::id()),
+            AccountSharedData::new(0, 0, &solana_sdk::native_loader::id()),
         ),
         (
-            false,
-            false,
             Pubkey::new_unique(),
-            AccountSharedData::new_ref(0, 0, &loader_id),
+            AccountSharedData::new(0, 0, &loader_id),
         ),
     ];
+    let instruction_accounts = Vec::new();
+
     if !path.exists() {
         return Err(anyhow!(
             "No such file or directory: {}",
@@ -133,7 +131,11 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let data = fs::read(&path)?;
 
     let program_indices = [0, 1];
-    let preparation = prepare_mock_invoke_context(&program_indices, &[], &keyed_accounts);
+    let preparation = prepare_mock_invoke_context(
+        &program_indices,
+        &[],
+        transaction_accounts,
+        instruction_accounts);
     let logs = LogCollector::new_ref_with_limit(None);
     let result = {
         let mut invoke_context = InvokeContext::new(
