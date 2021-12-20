@@ -223,9 +223,9 @@ dependencies = [
 
 [[package]]
 name = "bytemuck"
-version = "1.7.2"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72957246c41db82b8ef88a5486143830adeb8227ef9837740bdec67724cf2c5b"
+checksum = "439989e6b8c38d1b6570a384ef1e49c8848128f5a97f3914baef02920842712f"
 dependencies = [
  "bytemuck_derive",
 ]
@@ -1089,9 +1089,9 @@ checksum = "568a8e6258aa33c13358f81fd834adb854c6f7c9468520910a9b1e8fac068012"
 
 [[package]]
 name = "serde"
-version = "1.0.131"
+version = "1.0.132"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4ad69dfbd3e45369132cc64e6748c2d65cdfb001a2b1c232d128b4ad60561c1"
+checksum = "8b9875c23cf305cd1fd7eb77234cbb705f21ea6a72c637a5c6db5fe4b8e7f008"
 dependencies = [
  "serde_derive",
 ]
@@ -1107,9 +1107,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.131"
+version = "1.0.132"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b710a83c4e0dff6a3d511946b95274ad9ca9e5d3ae497b63fda866ac955358d2"
+checksum = "ecc0db5cb2556c0e558887d9bbdcf6ac4471e83ff66cf696e5419024d1606276"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1176,13 +1176,12 @@ checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
 [[package]]
 name = "solana-bpf-loader-program"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "bincode",
  "byteorder",
  "libsecp256k1",
  "log",
- "regex",
  "solana-measure",
  "solana-program-runtime",
  "solana-sdk",
@@ -1193,7 +1192,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "bs58",
  "bv",
@@ -1212,7 +1211,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi-macro"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1223,7 +1222,7 @@ dependencies = [
 [[package]]
 name = "solana-logger"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -1233,7 +1232,7 @@ dependencies = [
 [[package]]
 name = "solana-measure"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "log",
  "solana-sdk",
@@ -1242,7 +1241,7 @@ dependencies = [
 [[package]]
 name = "solana-program"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -1284,7 +1283,7 @@ dependencies = [
 [[package]]
 name = "solana-program-runtime"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -1304,7 +1303,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "assert_matches",
  "base64 0.13.0",
@@ -1353,7 +1352,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk-macro"
 version = "1.10.0"
-source = "git+https://github.com/solana-labs/solana#2a6dcb2ffde8be530717655b88844705bd39bb4d"
+source = "git+https://github.com/solana-labs/solana#755e81652178e6ef96ddf931cbd0668b477e87b1"
 dependencies = [
  "bs58",
  "proc-macro2",
