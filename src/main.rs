@@ -26,6 +26,7 @@ use solana_rbpf::{elf::Executable, vm::Config};
 use solana_sdk::{
     account::AccountSharedData, bpf_loader, compute_budget::ComputeBudget, entrypoint::SUCCESS,
     feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
+    transaction_context::TransactionContext,
 };
 
 // Start a new process running the program and capturing its output.
@@ -131,16 +132,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let data = fs::read(&path)?;
 
     let program_indices = [0, 1];
-    let preparation = prepare_mock_invoke_context(
-        &program_indices,
-        &[],
-        transaction_accounts,
-        instruction_accounts);
+    let preparation =
+        prepare_mock_invoke_context(transaction_accounts, instruction_accounts, &program_indices);
     let logs = LogCollector::new_ref_with_limit(None);
+    let transaction_context = TransactionContext::new(preparation.transaction_accounts, 1);
     let result = {
         let mut invoke_context = InvokeContext::new(
+            &transaction_context,
             Rent::default(),
-            &preparation.accounts,
             &[],
             &[],
             Some(Rc::clone(&logs)),
@@ -150,18 +149,15 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 ..ComputeBudget::default()
             },
             Rc::new(RefCell::new(Executors::default())),
+            None,
             Arc::new(FeatureSet::all_enabled()),
             Hash::default(),
+            0,
             0,
         );
 
         invoke_context
-            .push(
-                &preparation.message,
-                &preparation.message.instructions[0],
-                &program_indices,
-                &preparation.account_indices,
-            )
+            .push(&preparation.instruction_accounts, &program_indices)
             .unwrap();
 
         let keyed_accounts = invoke_context.get_keyed_accounts().unwrap();
