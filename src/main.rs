@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use regex::Regex;
 use std::{
+    borrow::Cow,
     cell::RefCell,
     env,
     ffi::OsStr,
@@ -19,12 +20,14 @@ use solana_bpf_loader_program::{
     ThisInstructionMeter,
 };
 use solana_program_runtime::{
+    compute_budget::ComputeBudget,
     invoke_context::{prepare_mock_invoke_context, Executors, InvokeContext},
     log_collector::LogCollector,
+    sysvar_cache::SysvarCache,
 };
 use solana_rbpf::{elf::Executable, vm::Config};
 use solana_sdk::{
-    account::AccountSharedData, bpf_loader, compute_budget::ComputeBudget, entrypoint::SUCCESS,
+    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
     feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
     transaction_context::TransactionContext,
 };
@@ -130,18 +133,32 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
 
     remove_bss_sections(&path)?;
     let data = fs::read(&path)?;
-
     let program_indices = [0, 1];
     let preparation =
         prepare_mock_invoke_context(transaction_accounts, instruction_accounts, &program_indices);
     let logs = LogCollector::new_ref_with_limit(None);
-    let transaction_context = TransactionContext::new(preparation.transaction_accounts, 1);
+    let mut transaction_context = TransactionContext::new(preparation.transaction_accounts, 1, 1);
+    let mut sysvar_cache = SysvarCache::default();
+    sysvar_cache.fill_missing_entries(|pubkey| {
+        (0..transaction_context.get_number_of_accounts()).find_map(|index| {
+            if transaction_context.get_key_of_account_at_index(index) == pubkey {
+                Some(
+                    transaction_context
+                        .get_account_at_index(index)
+                        .borrow()
+                        .clone(),
+                )
+            } else {
+                None
+            }
+        })
+    });
     let result = {
         let mut invoke_context = InvokeContext::new(
-            &transaction_context,
+            &mut transaction_context,
             Rent::default(),
             &[],
-            &[],
+            Cow::Owned(sysvar_cache),
             Some(Rc::clone(&logs)),
             ComputeBudget {
                 max_units: i64::MAX as u64,
@@ -149,27 +166,27 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 ..ComputeBudget::default()
             },
             Rc::new(RefCell::new(Executors::default())),
-            None,
             Arc::new(FeatureSet::all_enabled()),
             Hash::default(),
             0,
             0,
         );
-
-        invoke_context
-            .push(&preparation.instruction_accounts, &program_indices)
-            .unwrap();
-
-        let keyed_accounts = invoke_context.get_keyed_accounts().unwrap();
         let instruction_data = vec![];
+        invoke_context
+            .push(
+                &preparation.instruction_accounts,
+                &program_indices,
+                &instruction_data,
+            )
+            .unwrap();
         let (mut parameter_bytes, account_lengths) = serialize_parameters(
-            keyed_accounts[0].unsigned_key(),
-            keyed_accounts[1].unsigned_key(),
-            &keyed_accounts[2..],
-            &instruction_data,
+            invoke_context.transaction_context,
+            invoke_context
+                .transaction_context
+                .get_current_instruction_context()
+                .unwrap(),
         )
         .unwrap();
-
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
         let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
