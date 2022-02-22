@@ -108,7 +108,6 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let config = Config {
         max_call_depth: 100,
         enable_instruction_tracing: false,
-        reject_all_writable_sections: true,
         ..Config::default()
     };
     let loader_id = bpf_loader::id();
@@ -141,10 +140,15 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let mut sysvar_cache = SysvarCache::default();
     sysvar_cache.fill_missing_entries(|pubkey| {
         (0..transaction_context.get_number_of_accounts()).find_map(|index| {
-            if transaction_context.get_key_of_account_at_index(index) == pubkey {
+            if transaction_context
+                .get_key_of_account_at_index(index)
+                .unwrap()
+                == pubkey
+            {
                 Some(
                     transaction_context
                         .get_account_at_index(index)
+                        .unwrap()
                         .borrow()
                         .clone(),
                 )
