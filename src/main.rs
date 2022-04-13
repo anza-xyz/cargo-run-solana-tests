@@ -202,11 +202,13 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         )
         .unwrap();
         Executable::<BpfError, ThisInstructionMeter>::jit_compile(&mut executable).unwrap();
+        invoke_context
+            .set_orig_account_lengths(account_lengths)
+            .unwrap();
         let mut vm = create_vm(
             &executable,
             parameter_bytes.as_slice_mut(),
             &mut invoke_context,
-            &account_lengths,
         )
         .unwrap();
         let start_time = Instant::now();
