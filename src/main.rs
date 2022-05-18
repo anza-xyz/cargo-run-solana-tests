@@ -165,7 +165,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             Cow::Owned(sysvar_cache),
             Some(Rc::clone(&logs)),
             ComputeBudget {
-                max_units: i64::MAX as u64,
+                compute_unit_limit: i64::MAX as u64,
                 heap_size: opt.heap_size,
                 ..ComputeBudget::default()
             },
