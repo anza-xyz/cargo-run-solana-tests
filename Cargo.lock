@@ -1712,8 +1712,7 @@ dependencies = [
 
 [[package]]
 name = "solana-bpf-loader-program"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "bincode",
  "byteorder",
@@ -1730,8 +1729,7 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "bs58",
  "bv",
@@ -1751,8 +1749,7 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1762,8 +1759,7 @@ dependencies = [
 
 [[package]]
 name = "solana-logger"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -1772,8 +1768,7 @@ dependencies = [
 
 [[package]]
 name = "solana-measure"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "log",
  "solana-sdk",
@@ -1781,8 +1776,7 @@ dependencies = [
 
 [[package]]
 name = "solana-metrics"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -1794,8 +1788,7 @@ dependencies = [
 
 [[package]]
 name = "solana-program"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -1836,8 +1829,7 @@ dependencies = [
 
 [[package]]
 name = "solana-program-runtime"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -1859,8 +1851,7 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "assert_matches",
  "base64 0.13.0",
@@ -1909,8 +1900,7 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -1921,8 +1911,7 @@ dependencies = [
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "1.11.0"
-source = "git+https://github.com/solana-labs/solana#7402878628c87863ffe14d5c245e6f7b132f818c"
+version = "1.11.2"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -1950,9 +1939,7 @@ dependencies = [
 
 [[package]]
 name = "solana_rbpf"
-version = "0.2.28"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "036b2de45fa94424288070fe8f4cb5fa266c203af6e5ec56a33ccf0909d9448d"
+version = "0.2.31"
 dependencies = [
  "byteorder",
  "combine",

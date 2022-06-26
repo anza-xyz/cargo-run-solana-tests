@@ -15,11 +15,11 @@ publish = false
 regex = "1.4.5"
 structopt = { version = "0.3", default-features = false }
 anyhow = "1.0"
-solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-logger = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-program-runtime = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-sdk = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana_rbpf = "=0.2.28"
+solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana", version = "=1.11.2" }
+solana-logger = { git = "https://github.com/solana-labs/solana", version = "=1.11.2" }
+solana-program-runtime = { git = "https://github.com/solana-labs/solana", version = "=1.11.2" }
+solana-sdk = { git = "https://github.com/solana-labs/solana", version = "=1.11.2" }
+solana_rbpf = "0.2.31"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

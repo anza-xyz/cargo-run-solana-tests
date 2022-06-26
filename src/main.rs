@@ -25,11 +25,14 @@ use solana_program_runtime::{
     log_collector::LogCollector,
     sysvar_cache::SysvarCache,
 };
-use solana_rbpf::{elf::Executable, vm::Config};
+use solana_rbpf::{
+    elf::Executable,
+    verifier::RequisiteVerifier,
+    vm::{Config, VerifiedExecutable},
+};
 use solana_sdk::{
-    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
-    feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
-    transaction_context::TransactionContext,
+    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS, feature_set::FeatureSet,
+    hash::Hash, pubkey::Pubkey, rent::Rent, transaction_context::TransactionContext,
 };
 
 // Start a new process running the program and capturing its output.
@@ -193,21 +196,21 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .unwrap();
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
-        let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
-        let mut executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
-            &data,
-            None,
-            config,
-            syscall_registry,
-        )
+        let syscall_registry = register_syscalls(&mut invoke_context, false).unwrap();
+        let executable =
+            Executable::<BpfError, ThisInstructionMeter>::from_elf(&data, config, syscall_registry)
+                .unwrap();
+        let mut verified_executable = VerifiedExecutable::<
+            RequisiteVerifier,
+            BpfError,
+            ThisInstructionMeter,
+        >::from_executable(executable)
         .unwrap();
-        Executable::<BpfError, ThisInstructionMeter>::jit_compile(&mut executable).unwrap();
-        invoke_context
-            .set_orig_account_lengths(account_lengths)
-            .unwrap();
+        verified_executable.jit_compile().unwrap();
         let mut vm = create_vm(
-            &executable,
+            &verified_executable,
             parameter_bytes.as_slice_mut(),
+            account_lengths,
             &mut invoke_context,
         )
         .unwrap();
