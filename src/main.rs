@@ -25,7 +25,11 @@ use solana_program_runtime::{
     log_collector::LogCollector,
     sysvar_cache::SysvarCache,
 };
-use solana_rbpf::{elf::Executable, vm::Config};
+use solana_rbpf::{
+    elf::Executable,
+    verifier::RequisiteVerifier,
+    vm::{Config, VerifiedExecutable},
+};
 use solana_sdk::{
     account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
     feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
@@ -75,8 +79,8 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.26")
-        .join("bpf-tools")
+        .join("v1.27")
+        .join("sbf-tools")
         .join("llvm"))
 }
 
@@ -101,7 +105,7 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-// Execute the given test file in RBPF.
+// Execute the given test file in RSBF.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
 
@@ -136,7 +140,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let preparation =
         prepare_mock_invoke_context(transaction_accounts, instruction_accounts, &program_indices);
     let logs = LogCollector::new_ref_with_limit(None);
-    let mut transaction_context = TransactionContext::new(preparation.transaction_accounts, 1, 1);
+    let mut transaction_context = TransactionContext::new(preparation.transaction_accounts, 1, 1, 0);
     let mut sysvar_cache = SysvarCache::default();
     sysvar_cache.fill_missing_entries(|pubkey| {
         (0..transaction_context.get_number_of_accounts()).find_map(|index| {
@@ -193,21 +197,24 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .unwrap();
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
-        let syscall_registry = register_syscalls(&mut invoke_context).unwrap();
-        let mut executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
+        let syscall_registry = register_syscalls(&mut invoke_context, true).unwrap();
+        let executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
             &data,
-            None,
             config,
             syscall_registry,
         )
         .unwrap();
-        Executable::<BpfError, ThisInstructionMeter>::jit_compile(&mut executable).unwrap();
-        invoke_context
-            .set_orig_account_lengths(account_lengths)
+        let mut verified_executable =
+            VerifiedExecutable::<RequisiteVerifier, BpfError, ThisInstructionMeter>::from_executable(
+                executable,
+            )
+            .map_err(|err| format!("Executable verifier failed: {:?}", err))
             .unwrap();
+        verified_executable.jit_compile().unwrap();
         let mut vm = create_vm(
-            &executable,
+            &verified_executable,
             parameter_bytes.as_slice_mut(),
+            account_lengths,
             &mut invoke_context,
         )
         .unwrap();
@@ -253,8 +260,8 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "cargo-run-bpf-tests",
-    about = "Test runner for the bpfel-unknown-unknown target"
+    name = "cargo-run-sbf-tests",
+    about = "Test runner for the sbf-solana-solana target"
 )]
 struct Opt {
     #[allow(dead_code)]
@@ -271,8 +278,8 @@ fn main() {
     solana_logger::setup();
 
     let mut args = env::args().collect::<Vec<_>>();
-    if let Some("run-bpf-tests") = args.get(1).map(|a| a.as_str()) {
-        // we're being invoked as `cargo run-bpf-tests`
+    if let Some("run-sbf-tests") = args.get(1).map(|a| a.as_str()) {
+        // we're being invoked as `cargo run-sbf-tests`
         args.remove(1);
     }
 
