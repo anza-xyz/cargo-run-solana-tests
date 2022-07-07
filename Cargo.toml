@@ -1,11 +1,11 @@
 [package]
-name = "run-bpf-tests"
+name = "run-sbf-tests"
 description = "Blockchain, Rebuilt for Scale"
 version = "1.0.0"
 documentation = "https://docs.rs/solana"
 homepage = "https://solana.com/"
 readme = "README.md"
-repository = "https://github.com/solana-labs/cargo-run-bpf-tests"
+repository = "https://github.com/solana-labs/cargo-run-sbf-tests"
 authors = ["Solana Maintainers <maintainers@solana.foundation>"]
 license = "Apache-2.0"
 edition = "2018"
@@ -15,15 +15,15 @@ publish = false
 regex = "1.4.5"
 structopt = { version = "0.3", default-features = false }
 anyhow = "1.0"
-solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-logger = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-program-runtime = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana-sdk = { git = "https://github.com/solana-labs/solana", version = "=1.11.0" }
-solana_rbpf = "=0.2.28"
+solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana", version = "=1.11.3" }
+solana-logger = { git = "https://github.com/solana-labs/solana", version = "=1.11.3" }
+solana-program-runtime = { git = "https://github.com/solana-labs/solana", version = "=1.11.3" }
+solana-sdk = { git = "https://github.com/solana-labs/solana", version = "=1.11.3" }
+solana_rbpf = "=0.2.31"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [[bin]]
-name = "cargo-run-bpf-tests"
+name = "cargo-run-sbf-tests"
 path = "src/main.rs"
