@@ -197,7 +197,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .unwrap();
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
-        let syscall_registry = register_syscalls(&mut invoke_context, true).unwrap();
+        let syscall_registry = register_syscalls(&mut invoke_context, false).unwrap();
         let executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
             &data,
             config,
