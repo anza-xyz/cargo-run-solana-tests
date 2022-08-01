@@ -31,8 +31,8 @@ use solana_rbpf::{
     vm::{Config, VerifiedExecutable},
 };
 use solana_sdk::{
-    account::AccountSharedData, bpf_loader, entrypoint::SUCCESS,
-    feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, rent::Rent,
+    account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
+    feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, sysvar::rent::Rent,
     transaction_context::TransactionContext,
 };
 
@@ -140,26 +140,29 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let preparation =
         prepare_mock_invoke_context(transaction_accounts, instruction_accounts, &program_indices);
     let logs = LogCollector::new_ref_with_limit(None);
-    let mut transaction_context = TransactionContext::new(preparation.transaction_accounts, 1, 1);
+    let mut transaction_context = TransactionContext::new(
+        preparation.transaction_accounts,
+        Some(Rent::default()),
+        1,
+        1,
+    );
     let mut sysvar_cache = SysvarCache::default();
-    sysvar_cache.fill_missing_entries(|pubkey| {
-        (0..transaction_context.get_number_of_accounts()).find_map(|index| {
+    sysvar_cache.fill_missing_entries(|pubkey, callback| {
+        for index in 0..transaction_context.get_number_of_accounts() {
             if transaction_context
                 .get_key_of_account_at_index(index)
                 .unwrap()
                 == pubkey
             {
-                Some(
+                callback(
                     transaction_context
                         .get_account_at_index(index)
                         .unwrap()
                         .borrow()
-                        .clone(),
-                )
-            } else {
-                None
+                        .data(),
+                );
             }
-        })
+        }
     });
     let result = {
         let mut invoke_context = InvokeContext::new(
@@ -193,6 +196,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 .transaction_context
                 .get_current_instruction_context()
                 .unwrap(),
+            true, // should_cap_ix_accounts
         )
         .unwrap();
         let compute_meter = invoke_context.get_compute_meter();
