@@ -1,7 +1,7 @@
 [package]
 name = "run-sbf-tests"
 description = "Blockchain, Rebuilt for Scale"
-version = "1.0.0"
+version = "1.15.0"
 documentation = "https://docs.rs/solana"
 homepage = "https://solana.com/"
 readme = "README.md"
@@ -19,7 +19,7 @@ solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana" }
 solana-logger = { git = "https://github.com/solana-labs/solana" }
 solana-program-runtime = { git = "https://github.com/solana-labs/solana" }
 solana-sdk = { git = "https://github.com/solana-labs/solana" }
-solana_rbpf = "=0.2.31"
+solana_rbpf = "=0.2.34"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

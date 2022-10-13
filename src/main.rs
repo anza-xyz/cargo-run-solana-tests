@@ -16,19 +16,20 @@ use std::{
 use structopt::StructOpt;
 
 use solana_bpf_loader_program::{
-    create_vm, serialization::serialize_parameters, syscalls::register_syscalls, BpfError,
+    create_vm, serialization::serialize_parameters, syscalls::register_syscalls,
     ThisInstructionMeter,
 };
 use solana_program_runtime::{
     compute_budget::ComputeBudget,
-    invoke_context::{prepare_mock_invoke_context, Executors, InvokeContext},
+    executor_cache::TransactionExecutorCache,
+    invoke_context::{prepare_mock_invoke_context, InvokeContext},
     log_collector::LogCollector,
     sysvar_cache::SysvarCache,
 };
 use solana_rbpf::{
     elf::Executable,
     verifier::RequisiteVerifier,
-    vm::{Config, VerifiedExecutable},
+    vm::{Config, StableResult, VerifiedExecutable},
 };
 use solana_sdk::{
     account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
@@ -176,7 +177,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 heap_size: opt.heap_size,
                 ..ComputeBudget::default()
             },
-            Rc::new(RefCell::new(Executors::default())),
+            Rc::new(RefCell::new(TransactionExecutorCache::default())),
             Arc::new(FeatureSet::all_enabled()),
             Hash::default(),
             0,
@@ -184,13 +185,16 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         );
         let instruction_data = vec![];
         invoke_context
-            .push(
-                &preparation.instruction_accounts,
+            .transaction_context
+            .get_next_instruction_context()
+            .unwrap()
+            .configure(
                 &program_indices,
+                &preparation.instruction_accounts,
                 &instruction_data,
-            )
-            .unwrap();
-        let (mut parameter_bytes, account_lengths) = serialize_parameters(
+            );
+        invoke_context.push().unwrap();
+        let (_parameter_bytes, regions, account_lengths) = serialize_parameters(
             invoke_context.transaction_context,
             invoke_context
                 .transaction_context
@@ -202,22 +206,21 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
         let syscall_registry = register_syscalls(&mut invoke_context, false).unwrap();
-        let executable = Executable::<BpfError, ThisInstructionMeter>::from_elf(
+        let executable = Executable::<ThisInstructionMeter>::from_elf(
             &data,
             config,
             syscall_registry,
         )
+        .map_err(|err| format!("Executable constructor failed: {:?}", err))
         .unwrap();
         let mut verified_executable =
-            VerifiedExecutable::<RequisiteVerifier, BpfError, ThisInstructionMeter>::from_executable(
-                executable,
-            )
-            .map_err(|err| format!("Executable verifier failed: {:?}", err))
-            .unwrap();
+            VerifiedExecutable::<RequisiteVerifier, ThisInstructionMeter>::from_executable(executable)
+                .map_err(|err| format!("Executable verifier failed: {:?}", err))
+                .unwrap();
         verified_executable.jit_compile().unwrap();
         let mut vm = create_vm(
             &verified_executable,
-            parameter_bytes.as_slice_mut(),
+            regions,
             account_lengths,
             &mut invoke_context,
         )
@@ -242,14 +245,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     }
 
     match result {
-        Ok(exit_code) => {
+        StableResult::Ok(exit_code) => {
             if exit_code == SUCCESS {
                 Ok(())
             } else {
                 Err(anyhow!("exit code: {}", exit_code))
             }
         }
-        Err(e) => {
+        StableResult::Err(e) => {
             // if false {
             //     let trace = File::create("trace.out").unwrap();
             //     let mut trace = BufWriter::new(trace);
@@ -257,7 +260,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             //         solana_rbpf::static_analysis::Analysis::from_executable(executable.as_ref());
             //     vm.get_tracer().write(&mut trace, &analysis).unwrap();
             // }
-            Err(e.into())
+            Err(anyhow!("{:?}", e))
         }
     }
 }
