@@ -205,7 +205,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .unwrap();
         let compute_meter = invoke_context.get_compute_meter();
         let mut instruction_meter = ThisInstructionMeter { compute_meter };
-        let syscall_registry = register_syscalls(&mut invoke_context, false).unwrap();
+        let syscall_registry = register_syscalls(&invoke_context.feature_set, false).unwrap();
         let executable = Executable::<ThisInstructionMeter>::from_elf(
             &data,
             config,
