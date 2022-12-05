@@ -1,40 +1,40 @@
-use anyhow::{anyhow, Context};
-use regex::Regex;
-use std::{
-    borrow::Cow,
-    cell::RefCell,
-    env,
-    ffi::OsStr,
-    fs,
-    io::{self, Write},
-    path::{Path, PathBuf},
-    process::{exit, Command, Stdio},
-    rc::Rc,
-    sync::Arc,
-    time::Instant,
-};
-use structopt::StructOpt;
-
-use solana_bpf_loader_program::{
-    create_vm, serialization::serialize_parameters, syscalls::register_syscalls,
-    ThisInstructionMeter,
-};
-use solana_program_runtime::{
-    compute_budget::ComputeBudget,
-    executor_cache::TransactionExecutorCache,
-    invoke_context::{prepare_mock_invoke_context, InvokeContext},
-    log_collector::LogCollector,
-    sysvar_cache::SysvarCache,
-};
-use solana_rbpf::{
-    elf::Executable,
-    verifier::RequisiteVerifier,
-    vm::{Config, StableResult, VerifiedExecutable},
-};
-use solana_sdk::{
-    account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
-    feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, sysvar::rent::Rent,
-    transaction_context::TransactionContext,
+use {
+    anyhow::{anyhow, Context},
+    regex::Regex,
+    solana_bpf_loader_program::{
+        create_vm, serialization::serialize_parameters, syscalls::register_syscalls,
+    },
+    solana_program_runtime::{
+        compute_budget::ComputeBudget,
+        executor_cache::TransactionExecutorCache,
+        invoke_context::{prepare_mock_invoke_context, InvokeContext},
+        log_collector::LogCollector,
+        sysvar_cache::SysvarCache,
+    },
+    solana_rbpf::{
+        elf::Executable,
+        verifier::RequisiteVerifier,
+        vm::{Config, StableResult, VerifiedExecutable},
+    },
+    solana_sdk::{
+        account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
+        feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, sysvar::rent::Rent,
+        transaction_context::TransactionContext,
+    },
+    std::{
+        borrow::Cow,
+        cell::RefCell,
+        env,
+        ffi::OsStr,
+        fs,
+        io::{self, Write},
+        path::{Path, PathBuf},
+        process::{exit, Command, Stdio},
+        rc::Rc,
+        sync::Arc,
+        time::Instant,
+    },
+    structopt::StructOpt,
 };
 
 // Start a new process running the program and capturing its output.
@@ -80,7 +80,7 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.29")
+        .join("v1.31")
         .join("sbf-tools")
         .join("llvm"))
 }
@@ -203,10 +203,8 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             true, // should_cap_ix_accounts
         )
         .unwrap();
-        let compute_meter = invoke_context.get_compute_meter();
-        let mut instruction_meter = ThisInstructionMeter { compute_meter };
         let syscall_registry = register_syscalls(&invoke_context.feature_set, false).unwrap();
-        let executable = Executable::<ThisInstructionMeter>::from_elf(
+        let executable = Executable::<InvokeContext>::from_elf(
             &data,
             config,
             syscall_registry,
@@ -214,7 +212,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .map_err(|err| format!("Executable constructor failed: {:?}", err))
         .unwrap();
         let mut verified_executable =
-            VerifiedExecutable::<RequisiteVerifier, ThisInstructionMeter>::from_executable(executable)
+            VerifiedExecutable::<RequisiteVerifier, InvokeContext>::from_executable(executable)
                 .map_err(|err| format!("Executable verifier failed: {:?}", err))
                 .unwrap();
         verified_executable.jit_compile().unwrap();
@@ -226,8 +224,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         )
         .unwrap();
         let start_time = Instant::now();
-        let result = vm.execute_program_jit(&mut instruction_meter);
-        let instruction_count = vm.get_total_instruction_count();
+        let (instruction_count, result) = vm.execute_program(false);
         println!(
             "Executed {} {} instructions in {:.2}s.",
             path.to_string_lossy(),
