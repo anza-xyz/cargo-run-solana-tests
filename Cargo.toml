@@ -19,7 +19,7 @@ solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana" }
 solana-logger = { git = "https://github.com/solana-labs/solana" }
 solana-program-runtime = { git = "https://github.com/solana-labs/solana" }
 solana-sdk = { git = "https://github.com/solana-labs/solana" }
-solana_rbpf = "=0.2.37"
+solana_rbpf = "=0.2.38"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

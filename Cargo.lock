@@ -2036,12 +2036,13 @@ dependencies = [
 [[package]]
 name = "solana-bpf-loader-program"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "bincode",
  "byteorder",
  "libsecp256k1",
  "log",
+ "rand 0.7.3",
  "solana-measure",
  "solana-program-runtime",
  "solana-sdk",
@@ -2053,7 +2054,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "ahash",
  "blake3",
@@ -2086,7 +2087,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi-macro"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2097,7 +2098,7 @@ dependencies = [
 [[package]]
 name = "solana-logger"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2107,7 +2108,7 @@ dependencies = [
 [[package]]
 name = "solana-measure"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2116,7 +2117,7 @@ dependencies = [
 [[package]]
 name = "solana-metrics"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2129,7 +2130,7 @@ dependencies = [
 [[package]]
 name = "solana-program"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2181,7 +2182,7 @@ dependencies = [
 [[package]]
 name = "solana-program-runtime"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "base64 0.13.1",
  "bincode",
@@ -2208,7 +2209,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "assert_matches",
  "base64 0.13.1",
@@ -2259,7 +2260,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk-macro"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2271,7 +2272,7 @@ dependencies = [
 [[package]]
 name = "solana-zk-token-sdk"
 version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#1b49c52d9896172f2ccc18a896b9c7c7b784cfbd"
+source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -2300,9 +2301,9 @@ dependencies = [
 
 [[package]]
 name = "solana_rbpf"
-version = "0.2.37"
+version = "0.2.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0669f9f5c355899600732451c65cc717d0ef0c53717749f03520337c824fd8a1"
+checksum = "a4e9e5085099858adba23d0a0b5298da8803f89999cb567ecafab9c916cdf53d"
 dependencies = [
  "byteorder",
  "combine",
@@ -2314,6 +2315,7 @@ dependencies = [
  "rustc-demangle",
  "scroll",
  "thiserror",
+ "winapi",
 ]
 
 [[package]]

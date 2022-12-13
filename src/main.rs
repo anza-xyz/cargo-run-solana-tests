@@ -2,7 +2,7 @@ use {
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_bpf_loader_program::{
-        create_vm, serialization::serialize_parameters, syscalls::register_syscalls,
+        create_vm, serialization::serialize_parameters, syscalls::create_loader,
     },
     solana_program_runtime::{
         compute_budget::ComputeBudget,
@@ -14,7 +14,7 @@ use {
     solana_rbpf::{
         elf::Executable,
         verifier::RequisiteVerifier,
-        vm::{Config, StableResult, VerifiedExecutable},
+        vm::{StableResult, VerifiedExecutable},
     },
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
@@ -109,12 +109,6 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
 // Execute the given test file in RSBF.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
-
-    let config = Config {
-        max_call_depth: 100,
-        enable_instruction_tracing: false,
-        ..Config::default()
-    };
     let loader_id = bpf_loader::id();
     let transaction_accounts = vec![
         (
@@ -203,14 +197,17 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             true, // should_cap_ix_accounts
         )
         .unwrap();
-        let syscall_registry = register_syscalls(&invoke_context.feature_set, false).unwrap();
-        let executable = Executable::<InvokeContext>::from_elf(
-            &data,
-            config,
-            syscall_registry,
+        let loader = create_loader(
+            &invoke_context.feature_set,
+            &ComputeBudget::default(),
+            true,
+            true,
+            true,
         )
-        .map_err(|err| format!("Executable constructor failed: {:?}", err))
-        .unwrap();
+    .unwrap();
+        let executable = Executable::<InvokeContext>::from_elf(&data, loader)
+            .map_err(|err| format!("Executable constructor failed: {:?}", err))
+            .unwrap();
         let mut verified_executable =
             VerifiedExecutable::<RequisiteVerifier, InvokeContext>::from_executable(executable)
                 .map_err(|err| format!("Executable verifier failed: {:?}", err))
