@@ -200,9 +200,9 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let loader = create_loader(
             &invoke_context.feature_set,
             &ComputeBudget::default(),
-            true,
-            true,
-            true,
+            false, // reject_deployment_of_broken_elfs
+            false, // disable_deploy_of_alloc_free_syscall
+            false, // debugging_features
         )
     .unwrap();
         let executable = Executable::<InvokeContext>::from_elf(&data, loader)
