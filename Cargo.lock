@@ -1767,7 +1767,7 @@ dependencies = [
  "solana-logger",
  "solana-program-runtime",
  "solana-sdk",
- "solana_rbpf",
+ "solana_rbpf 0.2.38",
  "structopt",
 ]
 
@@ -2047,7 +2047,7 @@ dependencies = [
  "solana-program-runtime",
  "solana-sdk",
  "solana-zk-token-sdk",
- "solana_rbpf",
+ "solana_rbpf 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -2202,7 +2202,7 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-sdk",
- "solana_rbpf",
+ "solana_rbpf 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -2297,6 +2297,23 @@ dependencies = [
  "subtle",
  "thiserror",
  "zeroize",
+]
+
+[[package]]
+name = "solana_rbpf"
+version = "0.2.38"
+dependencies = [
+ "byteorder",
+ "combine",
+ "goblin",
+ "hash32",
+ "libc",
+ "log",
+ "rand 0.8.5",
+ "rustc-demangle",
+ "scroll",
+ "thiserror",
+ "winapi",
 ]
 
 [[package]]

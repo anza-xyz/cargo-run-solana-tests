@@ -13,6 +13,7 @@ use {
     },
     solana_rbpf::{
         elf::Executable,
+        static_analysis::Analysis,
         verifier::RequisiteVerifier,
         vm::{StableResult, VerifiedExecutable},
     },
@@ -202,7 +203,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             &ComputeBudget::default(),
             false, // reject_deployment_of_broken_elfs
             false, // disable_deploy_of_alloc_free_syscall
-            false, // debugging_features
+            opt.trace, // debugging_features
         )
     .unwrap();
         let executable = Executable::<InvokeContext>::from_elf(&data, loader)
@@ -228,7 +229,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             instruction_count,
             start_time.elapsed().as_secs_f64()
         );
-
+        if opt.trace {
+            println!("Trace:");
+            let trace_log = vm.env.context_object_pointer.trace_log.as_slice();
+            let analysis = Analysis::from_executable(verified_executable.get_executable()).unwrap();
+            analysis
+                .disassemble_trace_log(&mut std::io::stdout(), trace_log)
+                .unwrap();
+        }
         result
     };
 
@@ -271,6 +279,8 @@ struct Opt {
     /// RBPF heap size
     #[structopt(long)]
     heap_size: Option<usize>,
+    #[structopt(short)]
+    trace: bool,
     #[structopt(parse(from_os_str))]
     file: PathBuf,
 }
