@@ -209,10 +209,12 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let executable = Executable::<InvokeContext>::from_elf(&data, loader)
             .map_err(|err| format!("Executable constructor failed: {:?}", err))
             .unwrap();
-        let verified_executable =
+        let mut verified_executable =
             VerifiedExecutable::<RequisiteVerifier, InvokeContext>::from_executable(executable)
                 .map_err(|err| format!("Executable verifier failed: {:?}", err))
                 .unwrap();
+        #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+        verified_executable.jit_compile().unwrap();
         let mut vm = create_vm(
             &verified_executable,
             regions,
