@@ -428,9 +428,9 @@ checksum = "dfb24e866b15a1af2a1b663f10c6b6b8f397a84aadb828f12e5b289ec23a3a3c"
 
 [[package]]
 name = "cc"
-version = "1.0.77"
+version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9f73505338f7d905b19d18738976aae232eb46b8efc15554ffc56deb5d9ebe4"
+checksum = "50d30906286121d95be3d479533b458f87493b30a4b5f79a607db8f5d11aa91f"
 dependencies = [
  "jobserver",
 ]
@@ -628,6 +628,41 @@ dependencies = [
  "serde",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "darling"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0808e1bd8671fb44a113a14e13497557533369847788fa2ae912b6ebfce9fa8"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "001d80444f28e193f30c2f293455da62dcf9a6b29918a4253152ae2b1de592cb"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b36230598a2d5de7ec1c6f51f72d8a99a9208daff41de2084d06e3fd3ea56685"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -1065,6 +1100,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
 name = "idna"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1263,18 +1304,18 @@ dependencies = [
 
 [[package]]
 name = "memoffset"
-version = "0.6.5"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aa361d4faea93603064a027415f07bd8e1d5c88c9fbf68bf56a285428fd79ce"
+checksum = "5de893c32cde5f383baa4c04c5d6dbdd735cfd4a794b0debdb2bb1b421da5ff4"
 dependencies = [
  "autocfg",
 ]
 
 [[package]]
 name = "memoffset"
-version = "0.7.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5de893c32cde5f383baa4c04c5d6dbdd735cfd4a794b0debdb2bb1b421da5ff4"
+checksum = "d61c719bcfbcf5d62b3a09efa6088de8c54bc0bfcd3ea7ae39fcc186108b8de1"
 dependencies = [
  "autocfg",
 ]
@@ -1767,7 +1808,7 @@ dependencies = [
  "solana-logger",
  "solana-program-runtime",
  "solana-sdk",
- "solana_rbpf 0.2.38",
+ "solana_rbpf",
  "structopt",
 ]
 
@@ -1824,9 +1865,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.9"
+version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97477e48b4cf8603ad5f7aaf897467cf42ab4218a38ef76fb14c2d6773a6d6a8"
+checksum = "5583e89e108996506031660fe09baa5011b9dd0341b89029313006d1fb508d70"
 
 [[package]]
 name = "ryu"
@@ -1896,27 +1937,27 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.149"
+version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "256b9932320c590e707b94576e3cc1f7c9024d0ee6612dfbcf1cb106cbe8e055"
+checksum = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccdf88ff5c12545d89d5efb"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_bytes"
-version = "0.11.7"
+version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfc50e8183eeeb6178dcb167ae34a8051d63535023ae38b5d8d12beae193d37b"
+checksum = "416bda436f9aab92e02c8e10d49a15ddd339cea90b6e340fe51ed97abb548294"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.149"
+version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4eae9b04cbffdfd550eb462ed33bc6a1b68c935127d008b27444d08380f94e4"
+checksum = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1944,6 +1985,28 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "serde_with"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30d904179146de381af4c93d3af6ca4984b3152db687dacb9c3c35e86f39809c"
+dependencies = [
+ "serde",
+ "serde_with_macros",
+]
+
+[[package]]
+name = "serde_with_macros"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1966009f3c05f095697c537312f5415d1e3ed31ce0a56942bac4c771c5c335e"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2035,8 +2098,8 @@ dependencies = [
 
 [[package]]
 name = "solana-bpf-loader-program"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "bincode",
  "byteorder",
@@ -2047,14 +2110,14 @@ dependencies = [
  "solana-program-runtime",
  "solana-sdk",
  "solana-zk-token-sdk",
- "solana_rbpf 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana_rbpf",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "ahash",
  "blake3",
@@ -2086,8 +2149,8 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2097,8 +2160,8 @@ dependencies = [
 
 [[package]]
 name = "solana-logger"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2107,8 +2170,8 @@ dependencies = [
 
 [[package]]
 name = "solana-measure"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2116,8 +2179,8 @@ dependencies = [
 
 [[package]]
 name = "solana-metrics"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2129,8 +2192,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2156,7 +2219,8 @@ dependencies = [
  "libc",
  "libsecp256k1",
  "log",
- "memoffset 0.6.5",
+ "memoffset 0.8.0",
+ "num-bigint",
  "num-derive",
  "num-traits",
  "parking_lot",
@@ -2181,8 +2245,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program-runtime"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "base64 0.13.1",
  "bincode",
@@ -2202,14 +2266,14 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-sdk",
- "solana_rbpf 0.2.38 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana_rbpf",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-sdk"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "assert_matches",
  "base64 0.13.1",
@@ -2245,6 +2309,7 @@ dependencies = [
  "serde_bytes",
  "serde_derive",
  "serde_json",
+ "serde_with",
  "sha2 0.10.6",
  "sha3 0.10.6",
  "solana-frozen-abi",
@@ -2259,8 +2324,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2271,8 +2336,8 @@ dependencies = [
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "1.15.0"
-source = "git+https://github.com/solana-labs/solana#3e649d2aa0f00de9565729ad18146435cd5e73f9"
+version = "1.16.0"
+source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -2301,26 +2366,9 @@ dependencies = [
 
 [[package]]
 name = "solana_rbpf"
-version = "0.2.38"
-dependencies = [
- "byteorder",
- "combine",
- "goblin",
- "hash32",
- "libc",
- "log",
- "rand 0.8.5",
- "rustc-demangle",
- "scroll",
- "thiserror",
- "winapi",
-]
-
-[[package]]
-name = "solana_rbpf"
-version = "0.2.38"
+version = "0.2.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4e9e5085099858adba23d0a0b5298da8803f89999cb567ecafab9c916cdf53d"
+checksum = "199a2e8ced67a32b47695256509d5a62b39cb7340f52f0a5d8de99f4dc2aeb43"
 dependencies = [
  "byteorder",
  "combine",
@@ -2340,6 +2388,12 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "structopt"
