@@ -209,11 +209,10 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let executable = Executable::<InvokeContext>::from_elf(&data, loader)
             .map_err(|err| format!("Executable constructor failed: {:?}", err))
             .unwrap();
-        let mut verified_executable =
+        let verified_executable =
             VerifiedExecutable::<RequisiteVerifier, InvokeContext>::from_executable(executable)
                 .map_err(|err| format!("Executable verifier failed: {:?}", err))
                 .unwrap();
-        verified_executable.jit_compile().unwrap();
         let mut vm = create_vm(
             &verified_executable,
             regions,
@@ -231,7 +230,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         );
         if opt.trace {
             println!("Trace:");
-            let trace_log = vm.env.context_object_pointer.trace_log.as_slice();
+            let trace_log = vm
+                .env
+                .context_object_pointer
+                .trace_log_stack
+                .last()
+                .expect("Inconsistent trace log stack")
+                .trace_log
+                .as_slice();
             let analysis = Analysis::from_executable(verified_executable.get_executable()).unwrap();
             analysis
                 .disassemble_trace_log(&mut std::io::stdout(), trace_log)
