@@ -1799,7 +1799,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "run-sbf-tests"
+name = "run-solana-tests"
 version = "1.15.0"
 dependencies = [
  "anyhow",
@@ -2099,7 +2099,7 @@ dependencies = [
 [[package]]
 name = "solana-bpf-loader-program"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "bincode",
  "byteorder",
@@ -2117,7 +2117,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "ahash",
  "blake3",
@@ -2150,7 +2150,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi-macro"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2161,7 +2161,7 @@ dependencies = [
 [[package]]
 name = "solana-logger"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2171,7 +2171,7 @@ dependencies = [
 [[package]]
 name = "solana-measure"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2180,7 +2180,7 @@ dependencies = [
 [[package]]
 name = "solana-metrics"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2193,7 +2193,7 @@ dependencies = [
 [[package]]
 name = "solana-program"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2246,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "solana-program-runtime"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "base64 0.13.1",
  "bincode",
@@ -2273,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "assert_matches",
  "base64 0.13.1",
@@ -2325,7 +2325,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk-macro"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2337,7 +2337,7 @@ dependencies = [
 [[package]]
 name = "solana-zk-token-sdk"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#06a841942380d25f579489c11fe4c3f09beb9c36"
+source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",

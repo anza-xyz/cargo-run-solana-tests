@@ -81,8 +81,8 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.32")
-        .join("sbf-tools")
+        .join("v1.35")
+        .join("platform-tools")
         .join("llvm"))
 }
 
@@ -107,7 +107,7 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-// Execute the given test file in RSBF.
+// Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
     let loader_id = bpf_loader::id();
@@ -277,14 +277,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "cargo-run-sbf-tests",
-    about = "Test runner for the sbf-solana-solana target"
+    name = "cargo-run-solana-tests",
+    about = "Test runner for the Solana Virtual Machine target"
 )]
 struct Opt {
     #[allow(dead_code)]
     #[structopt(long, hidden = true)]
     quiet: bool,
-    /// RBPF heap size
+    /// Solana VM heap size
     #[structopt(long)]
     heap_size: Option<usize>,
     #[structopt(short)]
@@ -297,8 +297,8 @@ fn main() {
     solana_logger::setup();
 
     let mut args = env::args().collect::<Vec<_>>();
-    if let Some("run-sbf-tests") = args.get(1).map(|a| a.as_str()) {
-        // we're being invoked as `cargo run-sbf-tests`
+    if let Some("run-solana-tests") = args.get(1).map(|a| a.as_str()) {
+        // we're being invoked as `cargo run-solana-tests`
         args.remove(1);
     }
 
