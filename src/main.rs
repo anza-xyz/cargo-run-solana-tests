@@ -81,8 +81,8 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.32")
-        .join("sbf-tools")
+        .join("v1.35")
+        .join("platform-tools")
         .join("llvm"))
 }
 
@@ -107,7 +107,7 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-// Execute the given test file in RSBF.
+// Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
     let loader_id = bpf_loader::id();
@@ -284,7 +284,7 @@ struct Opt {
     #[allow(dead_code)]
     #[structopt(long, hidden = true)]
     quiet: bool,
-    /// RBPF heap size
+    /// Solana VM heap size
     #[structopt(long)]
     heap_size: Option<usize>,
     #[structopt(short)]
