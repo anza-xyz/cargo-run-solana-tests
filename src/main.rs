@@ -2,7 +2,7 @@ use {
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_bpf_loader_program::{
-        create_vm, serialization::serialize_parameters, syscalls::create_loader,
+        create_ebpf_vm, create_vm, serialization::serialize_parameters, syscalls::create_loader,
     },
     solana_program_runtime::{
         compute_budget::ComputeBudget,
@@ -81,7 +81,7 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.35")
+        .join("v1.36")
         .join("platform-tools")
         .join("llvm"))
 }
@@ -215,13 +215,16 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 .unwrap();
         #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
         verified_executable.jit_compile().unwrap();
-        let mut vm = create_vm(
+        create_vm!(
+            vm,
             &verified_executable,
+            stack,
+            heap,
             regions,
             account_lengths,
-            &mut invoke_context,
-        )
-        .unwrap();
+            &mut invoke_context
+        );
+        let mut vm = vm.unwrap();
         let start_time = Instant::now();
         let (instruction_count, result) = vm.execute_program(false);
         println!(

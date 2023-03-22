@@ -178,9 +178,9 @@ checksum = "9ad284aeb45c13f2fb4f084de4a420ebf447423bdf9386c0540ce33cb3ef4b8c"
 
 [[package]]
 name = "arrayref"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4c527152e37cf757a3f78aae5a06fbeefdb07ccc535c980a3208ee3060dd544"
+checksum = "6b4930d2cb77ce62f89ee5d5289b4ac049559b1c45539271f5ed4fdc7db34545"
 
 [[package]]
 name = "arrayvec"
@@ -1800,7 +1800,7 @@ dependencies = [
 
 [[package]]
 name = "run-solana-tests"
-version = "1.15.0"
+version = "1.16.0"
 dependencies = [
  "anyhow",
  "regex",
@@ -2099,7 +2099,7 @@ dependencies = [
 [[package]]
 name = "solana-bpf-loader-program"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "bincode",
  "byteorder",
@@ -2117,7 +2117,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "ahash",
  "blake3",
@@ -2150,7 +2150,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi-macro"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2161,7 +2161,7 @@ dependencies = [
 [[package]]
 name = "solana-logger"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2171,7 +2171,7 @@ dependencies = [
 [[package]]
 name = "solana-measure"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2180,7 +2180,7 @@ dependencies = [
 [[package]]
 name = "solana-metrics"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2193,7 +2193,7 @@ dependencies = [
 [[package]]
 name = "solana-program"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2246,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "solana-program-runtime"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "base64 0.13.1",
  "bincode",
@@ -2273,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "assert_matches",
  "base64 0.13.1",
@@ -2325,7 +2325,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk-macro"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2337,7 +2337,7 @@ dependencies = [
 [[package]]
 name = "solana-zk-token-sdk"
 version = "1.16.0"
-source = "git+https://github.com/solana-labs/solana#b0112a5f43fd142ce1d7eebc39e9034aa49e9c2f"
+source = "git+https://github.com/solana-labs/solana#9a1d5ea95dcb0d68370e3075ae94d2fb88f79a46"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -2366,9 +2366,9 @@ dependencies = [
 
 [[package]]
 name = "solana_rbpf"
-version = "0.2.39"
+version = "0.2.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "199a2e8ced67a32b47695256509d5a62b39cb7340f52f0a5d8de99f4dc2aeb43"
+checksum = "1a5735b8c9defc3723162321a61ef738d34168401eeef213f62a32809739b0f5"
 dependencies = [
  "byteorder",
  "combine",
