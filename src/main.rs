@@ -2,33 +2,30 @@ use {
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_bpf_loader_program::{
-        create_ebpf_vm, create_vm, serialization::serialize_parameters, syscalls::create_loader,
+        create_vm, load_program_from_bytes, serialization::serialize_parameters,
+        syscalls::create_program_runtime_environment_v1,
     },
     solana_program_runtime::{
-        compute_budget::ComputeBudget,
-        executor_cache::TransactionExecutorCache,
-        invoke_context::{prepare_mock_invoke_context, InvokeContext},
-        log_collector::LogCollector,
-        sysvar_cache::SysvarCache,
+        compute_budget::ComputeBudget, invoke_context::InvokeContext,
+        loaded_programs::{LoadedProgramsForTxBatch, LoadProgramMetrics, LoadedProgramType},
+        log_collector::LogCollector, sysvar_cache::SysvarCache,
     },
     solana_rbpf::{
         elf::Executable,
         static_analysis::Analysis,
         verifier::RequisiteVerifier,
-        vm::{StableResult, VerifiedExecutable},
+        vm::StableResult,
     },
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount}, bpf_loader, entrypoint::SUCCESS,
-        feature_set::FeatureSet, hash::Hash, pubkey::Pubkey, sysvar::rent::Rent,
-        transaction_context::TransactionContext,
+        account::{AccountSharedData, ReadableAccount}, bpf_loader_upgradeable,
+        entrypoint::SUCCESS, feature_set::FeatureSet, hash::Hash, pubkey::Pubkey,
+        sysvar::rent::Rent, slot_history::Slot, transaction_context::TransactionContext,
     },
     std::{
-        borrow::Cow,
-        cell::RefCell,
         env,
         ffi::OsStr,
-        fs,
-        io::{self, Write},
+        fs::File,
+        io::{self, Read, Seek, Write},
         path::{Path, PathBuf},
         process::{exit, Command, Stdio},
         rc::Rc,
@@ -37,6 +34,30 @@ use {
     },
     structopt::StructOpt,
 };
+
+// Replace with std::lazy::Lazy when stabilized.
+// https://github.com/rust-lang/rust/issues/74465
+struct LazyAnalysis<'a, 'b> {
+    analysis: Option<Analysis<'a>>,
+    executable: &'a Executable<RequisiteVerifier, InvokeContext<'b>>,
+}
+
+impl<'a, 'b> LazyAnalysis<'a, 'b> {
+    fn new(executable: &'a Executable<RequisiteVerifier, InvokeContext<'b>>) -> Self {
+        Self {
+            analysis: None,
+            executable,
+        }
+    }
+
+    fn analyze(&mut self) -> &Analysis {
+        if let Some(ref analysis) = self.analysis {
+            return analysis;
+        }
+        self.analysis
+            .insert(Analysis::from_executable(self.executable).unwrap())
+    }
+}
 
 // Start a new process running the program and capturing its output.
 fn spawn<I, S>(program: &Path, args: I) -> Result<(String, String), anyhow::Error>
@@ -107,10 +128,69 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+fn load_program<'a>(
+    filename: &Path,
+    program_id: Pubkey,
+    invoke_context: &InvokeContext<'a>,
+) -> Executable<RequisiteVerifier, InvokeContext<'a>> {
+    let mut file = File::open(filename).unwrap();
+    let mut magic = [0u8; 4];
+    file.read_exact(&mut magic).unwrap();
+    file.rewind().unwrap();
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+    let slot = Slot::default();
+    let log_collector = invoke_context.get_log_collector();
+    let loader_key = bpf_loader_upgradeable::id();
+    let mut load_program_metrics = LoadProgramMetrics {
+        program_id: program_id.to_string(),
+        ..LoadProgramMetrics::default()
+    };
+    let account_size = contents.len();
+    let program_runtime_environment = create_program_runtime_environment_v1(
+        &invoke_context.feature_set,
+        invoke_context.get_compute_budget(),
+        false, /* deployment */
+        true,  /* debugging_features */
+    )
+    .unwrap();
+    // Allowing mut here, since it may be needed for jit compile, which is under a config flag
+    #[allow(unused_mut)]
+    let mut verified_executable = {
+        let result = load_program_from_bytes(
+            &invoke_context.feature_set,
+            log_collector,
+            &mut load_program_metrics,
+            &contents,
+            &loader_key,
+            account_size,
+            slot,
+            Arc::new(program_runtime_environment),
+        );
+        match result {
+            Ok(loaded_program) => match loaded_program.program {
+                LoadedProgramType::LegacyV1(program) => Ok(program),
+                _ => unreachable!(),
+            },
+            Err(err) => Err(format!("Loading executable failed: {err:?}")),
+        }
+    }
+    .unwrap();
+    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    verified_executable.jit_compile().unwrap();
+    unsafe {
+        std::mem::transmute::<
+            Executable<RequisiteVerifier, InvokeContext<'static>>,
+            Executable<RequisiteVerifier, InvokeContext<'a>>,
+        >(verified_executable)
+    }
+}
+
 // Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
-    let loader_id = bpf_loader::id();
+    let loader_id = bpf_loader_upgradeable::id();
+    let program_id = Pubkey::new_unique();
     let transaction_accounts = vec![
         (
             loader_id,
@@ -131,13 +211,11 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     }
 
     remove_bss_sections(&path)?;
-    let data = fs::read(&path)?;
+
     let program_indices = [0, 1];
-    let preparation =
-        prepare_mock_invoke_context(transaction_accounts, instruction_accounts, &program_indices);
     let logs = LogCollector::new_ref_with_limit(None);
     let mut transaction_context = TransactionContext::new(
-        preparation.transaction_accounts,
+        transaction_accounts,
         Some(Rent::default()),
         1,
         1,
@@ -161,18 +239,22 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         }
     });
     let result = {
+        let programs_loaded_for_tx_batch = LoadedProgramsForTxBatch::default();
+        let mut programs_modified_by_tx = LoadedProgramsForTxBatch::default();
+        let mut programs_updated_only_for_global_cache = LoadedProgramsForTxBatch::default();
         let mut invoke_context = InvokeContext::new(
             &mut transaction_context,
             Rent::default(),
-            &[],
-            Cow::Owned(sysvar_cache),
+            &sysvar_cache,
             Some(Rc::clone(&logs)),
             ComputeBudget {
                 compute_unit_limit: i64::MAX as u64,
                 heap_size: opt.heap_size,
                 ..ComputeBudget::default()
             },
-            Rc::new(RefCell::new(TransactionExecutorCache::default())),
+            &programs_loaded_for_tx_batch,
+            &mut programs_modified_by_tx,
+            &mut programs_updated_only_for_global_cache,
             Arc::new(FeatureSet::all_enabled()),
             Hash::default(),
             0,
@@ -185,7 +267,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             .unwrap()
             .configure(
                 &program_indices,
-                &preparation.instruction_accounts,
+                &instruction_accounts,
                 &instruction_data,
             );
         invoke_context.push().unwrap();
@@ -196,37 +278,21 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 .get_current_instruction_context()
                 .unwrap(),
             true, // should_cap_ix_accounts
+            true, // copy_account_data
         )
         .unwrap();
-        let loader = create_loader(
-            &invoke_context.feature_set,
-            &ComputeBudget::default(),
-            false, // reject_deployment_of_broken_elfs
-            false, // disable_deploy_of_alloc_free_syscall
-            opt.trace, // debugging_features
-        )
-    .unwrap();
-        let executable = Executable::<InvokeContext>::from_elf(&data, loader)
-            .map_err(|err| format!("Executable constructor failed: {:?}", err))
-            .unwrap();
-        let mut verified_executable =
-            VerifiedExecutable::<RequisiteVerifier, InvokeContext>::from_executable(executable)
-                .map_err(|err| format!("Executable verifier failed: {:?}", err))
-                .unwrap();
-        #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
-        verified_executable.jit_compile().unwrap();
+
+        let verified_executable = load_program(path.as_path(), program_id, &invoke_context);
         create_vm!(
             vm,
             &verified_executable,
-            stack,
-            heap,
             regions,
             account_lengths,
             &mut invoke_context
         );
         let mut vm = vm.unwrap();
         let start_time = Instant::now();
-        let (instruction_count, result) = vm.execute_program(false);
+        let (instruction_count, result) = vm.execute_program(&verified_executable, false);
         println!(
             "Executed {} {} instructions in {:.2}s.",
             path.to_string_lossy(),
@@ -235,18 +301,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         );
         if opt.trace {
             println!("Trace:");
-            let trace_log = vm
-                .env
-                .context_object_pointer
-                .trace_log_stack
-                .last()
-                .expect("Inconsistent trace log stack")
-                .trace_log
-                .as_slice();
-            let analysis = Analysis::from_executable(verified_executable.get_executable()).unwrap();
-            analysis
-                .disassemble_trace_log(&mut std::io::stdout(), trace_log)
-                .unwrap();
+            let mut analysis = LazyAnalysis::new(&verified_executable);
+            if let Some(Some(syscall_context)) = vm.context_object_pointer.syscall_context.last() {
+                let trace = syscall_context.trace_log.as_slice();
+                analysis
+                    .analyze()
+                    .disassemble_trace_log(&mut std::io::stdout(), trace)
+                    .unwrap();
+            }
         }
         result
     };
