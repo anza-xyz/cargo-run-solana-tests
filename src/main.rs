@@ -119,7 +119,7 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
 
     for bss in sections {
         let objcopy = llvm_path.join("llvm-objcopy");
-        let mut objcopy_args = vec!["--remove-section"];
+        let mut objcopy_args = vec!["--strip-all", "--remove-section"];
         objcopy_args.push(&bss);
         objcopy_args.push(&module);
         spawn(&objcopy, &objcopy_args)?;
@@ -189,6 +189,15 @@ fn load_program<'a>(
 // Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
+    if !path.exists() {
+        return Err(anyhow!(
+            "No such file or directory: {}",
+            path.to_string_lossy()
+        ));
+    }
+
+    remove_bss_sections(&path)?;
+
     let loader_id = bpf_loader_upgradeable::id();
     let program_id = Pubkey::new_unique();
     let transaction_accounts = vec![
@@ -202,16 +211,6 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         ),
     ];
     let instruction_accounts = Vec::new();
-
-    if !path.exists() {
-        return Err(anyhow!(
-            "No such file or directory: {}",
-            path.to_string_lossy()
-        ));
-    }
-
-    remove_bss_sections(&path)?;
-
     let program_indices = [0, 1];
     let logs = LogCollector::new_ref_with_limit(None);
     let mut transaction_context = TransactionContext::new(
