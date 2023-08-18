@@ -46,17 +46,6 @@ dependencies = [
 
 [[package]]
 name = "ahash"
-version = "0.7.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
-dependencies = [
- "getrandom 0.2.8",
- "once_cell",
- "version_check",
-]
-
-[[package]]
-name = "ahash"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c99f64d1e06488f620f932677e24bc6e2897582980441ae90a671415bd7ec2f"
@@ -315,15 +304,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
-name = "bitflags"
-version = "2.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4682ae6287fcf752ecaabbfcc7b6f9b72aa33933dc23a554d853aea8eea8635"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "bitmaps"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -373,35 +353,12 @@ checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
 name = "borsh"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15bf3650200d8bffa99015595e10f1fbd17de07abbc25bb067da79e769939bfa"
-dependencies = [
- "borsh-derive 0.9.3",
- "hashbrown 0.11.2",
-]
-
-[[package]]
-name = "borsh"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
- "borsh-derive 0.10.3",
- "hashbrown 0.12.3",
-]
-
-[[package]]
-name = "borsh-derive"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6441c552f230375d18e3cc377677914d2ca2b0d36e52129fe15450a2dce46775"
-dependencies = [
- "borsh-derive-internal 0.9.3",
- "borsh-schema-derive-internal 0.9.3",
- "proc-macro-crate 0.1.5",
- "proc-macro2",
- "syn 1.0.105",
+ "borsh-derive",
+ "hashbrown 0.13.2",
 ]
 
 [[package]]
@@ -410,21 +367,10 @@ version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0754613691538d51f329cce9af41d7b7ca150bc973056f1156611489475f54f7"
 dependencies = [
- "borsh-derive-internal 0.10.3",
- "borsh-schema-derive-internal 0.10.3",
+ "borsh-derive-internal",
+ "borsh-schema-derive-internal",
  "proc-macro-crate 0.1.5",
  "proc-macro2",
- "syn 1.0.105",
-]
-
-[[package]]
-name = "borsh-derive-internal"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5449c28a7b352f2d1e592a8a28bf139bc71afb0764a14f3c02500935d8c44065"
-dependencies = [
- "proc-macro2",
- "quote",
  "syn 1.0.105",
 ]
 
@@ -433,17 +379,6 @@ name = "borsh-derive-internal"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afb438156919598d2c7bad7e1c0adf3d26ed3840dbc010db1a882a65583ca2fb"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.105",
-]
-
-[[package]]
-name = "borsh-schema-derive-internal"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdbd5696d8bfa21d53d9fe39a714a18538bad11492a42d066dbbc395fb1951c0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -577,7 +512,7 @@ version = "2.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0610544180c38b88101fecf2dd634b174a62eef6946f84dfc6a7127512b381c"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
  "textwrap",
  "unicode-width",
 ]
@@ -1071,21 +1006,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
-dependencies = [
- "ahash 0.7.6",
-]
-
-[[package]]
-name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
-dependencies = [
- "ahash 0.7.6",
-]
 
 [[package]]
 name = "hashbrown"
@@ -1093,7 +1016,7 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
 dependencies = [
- "ahash 0.8.3",
+ "ahash",
 ]
 
 [[package]]
@@ -1880,7 +1803,7 @@ version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
 ]
 
 [[package]]
@@ -2240,7 +2163,7 @@ dependencies = [
 [[package]]
 name = "solana-bpf-loader-program"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "bincode",
  "byteorder",
@@ -2258,9 +2181,9 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
- "ahash 0.8.3",
+ "ahash",
  "blake3",
  "block-buffer 0.10.4",
  "bs58",
@@ -2290,7 +2213,7 @@ dependencies = [
 [[package]]
 name = "solana-frozen-abi-macro"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2301,7 +2224,7 @@ dependencies = [
 [[package]]
 name = "solana-logger"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2311,7 +2234,7 @@ dependencies = [
 [[package]]
 name = "solana-measure"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2320,7 +2243,7 @@ dependencies = [
 [[package]]
 name = "solana-metrics"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2328,13 +2251,12 @@ dependencies = [
  "log",
  "reqwest",
  "solana-sdk",
- "thiserror",
 ]
 
 [[package]]
 name = "solana-program"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2343,10 +2265,9 @@ dependencies = [
  "array-bytes",
  "base64 0.21.2",
  "bincode",
- "bitflags 2.4.0",
+ "bitflags",
  "blake3",
- "borsh 0.10.3",
- "borsh 0.9.3",
+ "borsh",
  "bs58",
  "bv",
  "bytemuck",
@@ -2388,7 +2309,7 @@ dependencies = [
 [[package]]
 name = "solana-program-runtime"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "base64 0.21.2",
  "bincode",
@@ -2415,13 +2336,13 @@ dependencies = [
 [[package]]
 name = "solana-sdk"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "assert_matches",
  "base64 0.21.2",
  "bincode",
- "bitflags 2.4.0",
- "borsh 0.10.3",
+ "bitflags",
+ "borsh",
  "bs58",
  "bytemuck",
  "byteorder",
@@ -2467,7 +2388,7 @@ dependencies = [
 [[package]]
 name = "solana-sdk-macro"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2479,7 +2400,7 @@ dependencies = [
 [[package]]
 name = "solana-zk-token-sdk"
 version = "1.17.0"
-source = "git+https://github.com/solana-labs/solana#a9ecdc0ae5f77fe2c90008f29906bbaf4ff79f12"
+source = "git+https://github.com/solana-labs/solana?rev=9731331be4dd4bfccf85b0443e3d652aec30a1f8#9731331be4dd4bfccf85b0443e3d652aec30a1f8"
 dependencies = [
  "aes-gcm-siv",
  "base64 0.21.2",

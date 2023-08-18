@@ -3,7 +3,7 @@ use {
     regex::Regex,
     solana_bpf_loader_program::{
         create_vm, load_program_from_bytes, serialization::serialize_parameters,
-        syscalls::create_program_runtime_environment_v1,
+        syscalls::create_program_runtime_environment,
     },
     solana_program_runtime::{
         compute_budget::ComputeBudget, invoke_context::InvokeContext,
@@ -102,7 +102,7 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.36")
+        .join("v1.37")
         .join("platform-tools")
         .join("llvm"))
 }
@@ -147,11 +147,11 @@ fn load_program<'a>(
         ..LoadProgramMetrics::default()
     };
     let account_size = contents.len();
-    let program_runtime_environment = create_program_runtime_environment_v1(
+    let program_runtime_environment = create_program_runtime_environment(
         &invoke_context.feature_set,
         invoke_context.get_compute_budget(),
         false, /* deployment */
-        true,  /* debugging_features */
+        false,  /* debugging_features */
     )
     .unwrap();
     // Allowing mut here, since it may be needed for jit compile, which is under a config flag
