@@ -3,7 +3,7 @@ use {
     regex::Regex,
     solana_bpf_loader_program::{
         create_vm, load_program_from_bytes, serialization::serialize_parameters,
-        syscalls::create_program_runtime_environment,
+        syscalls::create_program_runtime_environment_v1,
     },
     solana_program_runtime::{
         compute_budget::ComputeBudget, invoke_context::InvokeContext,
@@ -13,15 +13,15 @@ use {
     solana_rbpf::{
         elf::Executable,
         static_analysis::Analysis,
-        verifier::RequisiteVerifier,
         vm::StableResult,
     },
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount}, bpf_loader_upgradeable,
-        entrypoint::SUCCESS, feature_set::FeatureSet, hash::Hash, pubkey::Pubkey,
+        entrypoint::SUCCESS, feature_set::{self, FeatureSet}, hash::Hash, pubkey::Pubkey,
         sysvar::rent::Rent, slot_history::Slot, transaction_context::TransactionContext,
     },
     std::{
+        convert::TryFrom,
         env,
         ffi::OsStr,
         fs::File,
@@ -39,11 +39,11 @@ use {
 // https://github.com/rust-lang/rust/issues/74465
 struct LazyAnalysis<'a, 'b> {
     analysis: Option<Analysis<'a>>,
-    executable: &'a Executable<RequisiteVerifier, InvokeContext<'b>>,
+    executable: &'a Executable<InvokeContext<'b>>,
 }
 
 impl<'a, 'b> LazyAnalysis<'a, 'b> {
-    fn new(executable: &'a Executable<RequisiteVerifier, InvokeContext<'b>>) -> Self {
+    fn new(executable: &'a Executable<InvokeContext<'b>>) -> Self {
         Self {
             analysis: None,
             executable,
@@ -132,7 +132,7 @@ fn load_program<'a>(
     filename: &Path,
     program_id: Pubkey,
     invoke_context: &InvokeContext<'a>,
-) -> Executable<RequisiteVerifier, InvokeContext<'a>> {
+) -> Executable<InvokeContext<'a>> {
     let mut file = File::open(filename).unwrap();
     let mut magic = [0u8; 4];
     file.read_exact(&mut magic).unwrap();
@@ -147,7 +147,7 @@ fn load_program<'a>(
         ..LoadProgramMetrics::default()
     };
     let account_size = contents.len();
-    let program_runtime_environment = create_program_runtime_environment(
+    let program_runtime_environment = create_program_runtime_environment_v1(
         &invoke_context.feature_set,
         invoke_context.get_compute_budget(),
         false, /* deployment */
@@ -158,7 +158,9 @@ fn load_program<'a>(
     #[allow(unused_mut)]
     let mut verified_executable = {
         let result = load_program_from_bytes(
-            &invoke_context.feature_set,
+            invoke_context
+                .feature_set
+                .is_active(&feature_set::delay_visibility_of_program_deployment::id()),
             log_collector,
             &mut load_program_metrics,
             &contents,
@@ -166,6 +168,7 @@ fn load_program<'a>(
             account_size,
             slot,
             Arc::new(program_runtime_environment),
+            false,
         );
         match result {
             Ok(loaded_program) => match loaded_program.program {
@@ -179,10 +182,9 @@ fn load_program<'a>(
     #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
     verified_executable.jit_compile().unwrap();
     unsafe {
-        std::mem::transmute::<
-            Executable<RequisiteVerifier, InvokeContext<'static>>,
-            Executable<RequisiteVerifier, InvokeContext<'a>>,
-        >(verified_executable)
+        std::mem::transmute::<Executable<InvokeContext<'static>>, Executable<InvokeContext<'a>>>(
+            verified_executable,
+        )
     }
 }
 
@@ -248,7 +250,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             Some(Rc::clone(&logs)),
             ComputeBudget {
                 compute_unit_limit: i64::MAX as u64,
-                heap_size: opt.heap_size,
+                heap_size: opt.heap_size.unwrap(),
                 ..ComputeBudget::default()
             },
             &programs_loaded_for_tx_batch,
@@ -313,7 +315,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     };
 
     if let Ok(logs) = Rc::try_unwrap(logs) {
-        for message in Vec::from(logs.into_inner()) {
+        for message in logs.into_inner().into_messages() {
             let _ = io::stdout().write_all(message.replace("Program log: ", "").as_bytes());
         }
     }
@@ -350,7 +352,7 @@ struct Opt {
     quiet: bool,
     /// Solana VM heap size
     #[structopt(long)]
-    heap_size: Option<usize>,
+    heap_size: Option<u32>,
     #[structopt(short)]
     trace: bool,
     #[structopt(parse(from_os_str))]
