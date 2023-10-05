@@ -350,6 +350,12 @@ struct Opt {
     #[allow(dead_code)]
     #[structopt(long, hidden = true)]
     quiet: bool,
+    #[allow(dead_code)]
+    #[structopt(long)]
+    format: Option<String>,
+    #[allow(dead_code)]
+    #[structopt(short = "Z")]
+    extra: Option<String>,
     /// Solana VM heap size
     #[structopt(long)]
     heap_size: Option<u32>,
