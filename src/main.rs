@@ -132,6 +132,7 @@ fn load_program<'a>(
     filename: &Path,
     program_id: Pubkey,
     invoke_context: &InvokeContext<'a>,
+    output_trace: bool,
 ) -> Executable<InvokeContext<'a>> {
     let mut file = File::open(filename).unwrap();
     let mut magic = [0u8; 4];
@@ -151,7 +152,7 @@ fn load_program<'a>(
         &invoke_context.feature_set,
         invoke_context.get_compute_budget(),
         false, /* deployment */
-        false,  /* debugging_features */
+        output_trace, /* debugging_features */
     )
     .unwrap();
     // Allowing mut here, since it may be needed for jit compile, which is under a config flag
@@ -283,7 +284,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         )
         .unwrap();
 
-        let verified_executable = load_program(path.as_path(), program_id, &invoke_context);
+        let verified_executable = load_program(path.as_path(), program_id, &invoke_context, opt.trace);
         create_vm!(
             vm,
             &verified_executable,
