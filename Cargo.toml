@@ -12,14 +12,16 @@ edition = "2018"
 publish = false
 
 [dependencies]
-regex = "1.4.5"
-structopt = { version = "0.3", default-features = false }
 anyhow = "1.0"
-solana-bpf-loader-program = { git = "https://github.com/solana-labs/solana", rev = "ddd029774afcdf695ebf44494a04942ba3570075" }
-solana-logger = { git = "https://github.com/solana-labs/solana", rev = "ddd029774afcdf695ebf44494a04942ba3570075" }
-solana-program-runtime = { git = "https://github.com/solana-labs/solana", rev = "ddd029774afcdf695ebf44494a04942ba3570075" }
-solana-sdk = { git = "https://github.com/solana-labs/solana", rev = "ddd029774afcdf695ebf44494a04942ba3570075" }
-solana_rbpf = "=0.7.2"
+regex = "1.4.5"
+solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana-compute-budget = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana-sdk = { git = "https://github.com/anza-xyz/agave.git", rev = "784352c3765792105764c875c1a619e6f71ded55" }
+solana_rbpf = "=0.8.2"
+structopt = { version = "0.3", default-features = false }
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

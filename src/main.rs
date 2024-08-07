@@ -2,26 +2,29 @@ use {
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_bpf_loader_program::{
-        create_vm, load_program_from_bytes, serialization::serialize_parameters,
-        syscalls::create_program_runtime_environment_v1,
+        calculate_heap_cost, create_vm, load_program_from_bytes,
+        serialization::serialize_parameters, syscalls::create_program_runtime_environment_v1,
     },
+    solana_compute_budget::compute_budget::ComputeBudget,
+    solana_log_collector::LogCollector,
     solana_program_runtime::{
-        compute_budget::ComputeBudget, invoke_context::InvokeContext,
-        loaded_programs::{LoadedProgramsForTxBatch, LoadProgramMetrics, LoadedProgramType},
-        log_collector::LogCollector, sysvar_cache::SysvarCache,
+        invoke_context::{EnvironmentConfig, InvokeContext},
+        loaded_programs::{LoadProgramMetrics, ProgramCacheEntryType, ProgramCacheForTxBatch},
+        sysvar_cache::SysvarCache,
     },
-    solana_rbpf::{
-        elf::Executable,
-        static_analysis::Analysis,
-        vm::StableResult,
-    },
+    solana_rbpf::{elf::Executable, error::ProgramResult, static_analysis::Analysis},
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount}, bpf_loader_upgradeable,
-        entrypoint::SUCCESS, feature_set::{self, FeatureSet}, hash::Hash, pubkey::Pubkey,
-        sysvar::rent::Rent, slot_history::Slot, transaction_context::TransactionContext,
+        account::{AccountSharedData, ReadableAccount},
+        bpf_loader_upgradeable,
+        entrypoint::SUCCESS,
+        feature_set::FeatureSet,
+        hash::Hash,
+        pubkey::Pubkey,
+        slot_history::Slot,
+        sysvar::rent::Rent,
+        transaction_context::TransactionContext,
     },
     std::{
-        convert::TryFrom,
         env,
         ffi::OsStr,
         fs::File,
@@ -149,9 +152,9 @@ fn load_program<'a>(
     };
     let account_size = contents.len();
     let program_runtime_environment = create_program_runtime_environment_v1(
-        &invoke_context.feature_set,
+        invoke_context.get_feature_set(),
         invoke_context.get_compute_budget(),
-        false, /* deployment */
+        false,        /* deployment */
         output_trace, /* debugging_features */
     )
     .unwrap();
@@ -159,10 +162,7 @@ fn load_program<'a>(
     #[allow(unused_mut)]
     let mut verified_executable = {
         let result = load_program_from_bytes(
-            invoke_context
-                .feature_set
-                .is_active(&feature_set::delay_visibility_of_program_deployment::id()),
-            log_collector,
+            log_collector.clone(),
             &mut load_program_metrics,
             &contents,
             &loader_key,
@@ -173,7 +173,7 @@ fn load_program<'a>(
         );
         match result {
             Ok(loaded_program) => match loaded_program.program {
-                LoadedProgramType::LegacyV1(program) => Ok(program),
+                ProgramCacheEntryType::Loaded(program) => Ok(program),
                 _ => unreachable!(),
             },
             Err(err) => Err(format!("Loading executable failed: {err:?}")),
@@ -215,13 +215,9 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     ];
     let instruction_accounts = Vec::new();
     let program_indices = [0, 1];
-    let logs = LogCollector::new_ref_with_limit(None);
-    let mut transaction_context = TransactionContext::new(
-        transaction_accounts,
-        Some(Rent::default()),
-        1,
-        1,
-    );
+    let logs = LogCollector::new_ref();
+    let mut transaction_context =
+        TransactionContext::new(transaction_accounts, Rent::default(), 1, 1);
     let mut sysvar_cache = SysvarCache::default();
     sysvar_cache.fill_missing_entries(|pubkey, callback| {
         for index in 0..transaction_context.get_number_of_accounts() {
@@ -241,37 +237,33 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         }
     });
     let result = {
-        let programs_loaded_for_tx_batch = LoadedProgramsForTxBatch::default();
-        let mut programs_modified_by_tx = LoadedProgramsForTxBatch::default();
-        let mut programs_updated_only_for_global_cache = LoadedProgramsForTxBatch::default();
+        let mut program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
+        let env_config = EnvironmentConfig::new(
+            Hash::new_unique(),
+            None,
+            None,
+            Arc::new(FeatureSet::all_enabled()),
+            0,
+            &sysvar_cache,
+        );
+
         let mut invoke_context = InvokeContext::new(
             &mut transaction_context,
-            Rent::default(),
-            &sysvar_cache,
-            Some(Rc::clone(&logs)),
+            &mut program_cache_for_tx_batch,
+            env_config,
+            Some(logs.clone()),
             ComputeBudget {
                 compute_unit_limit: i64::MAX as u64,
                 heap_size: opt.heap_size.unwrap(),
                 ..ComputeBudget::default()
             },
-            &programs_loaded_for_tx_batch,
-            &mut programs_modified_by_tx,
-            &mut programs_updated_only_for_global_cache,
-            Arc::new(FeatureSet::all_enabled()),
-            Hash::default(),
-            0,
-            0,
         );
         let instruction_data = vec![];
         invoke_context
             .transaction_context
             .get_next_instruction_context()
             .unwrap()
-            .configure(
-                &program_indices,
-                &instruction_accounts,
-                &instruction_data,
-            );
+            .configure(&program_indices, &instruction_accounts, &instruction_data);
         invoke_context.push().unwrap();
         let (_parameter_bytes, regions, account_lengths) = serialize_parameters(
             invoke_context.transaction_context,
@@ -279,20 +271,34 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 .transaction_context
                 .get_current_instruction_context()
                 .unwrap(),
-            true, // should_cap_ix_accounts
             true, // copy_account_data
         )
         .unwrap();
 
-        let verified_executable = load_program(path.as_path(), program_id, &invoke_context, opt.trace);
-        create_vm!(
-            vm,
+        let verified_executable =
+            load_program(path.as_path(), program_id, &invoke_context, opt.trace);
+        let stack_size = verified_executable.get_config().stack_size();
+        let heap_size = invoke_context.get_compute_budget().heap_size;
+        invoke_context
+            .consume_checked(calculate_heap_cost(
+                heap_size,
+                invoke_context.get_compute_budget().heap_cost,
+            ))
+            .unwrap();
+
+        let mut stack = vec![0u8; stack_size];
+        let mut heap = vec![0u8; heap_size as usize];
+
+        let mut vm = create_vm(
             &verified_executable,
             regions,
             account_lengths,
-            &mut invoke_context
-        );
-        let mut vm = vm.unwrap();
+            &mut invoke_context,
+            stack.as_mut_slice(),
+            heap.as_mut_slice(),
+        )
+        .unwrap();
+
         let start_time = Instant::now();
         let (instruction_count, result) = vm.execute_program(&verified_executable, false);
         println!(
@@ -322,14 +328,14 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     }
 
     match result {
-        StableResult::Ok(exit_code) => {
+        ProgramResult::Ok(exit_code) => {
             if exit_code == SUCCESS {
                 Ok(())
             } else {
                 Err(anyhow!("exit code: {}", exit_code))
             }
         }
-        StableResult::Err(e) => {
+        ProgramResult::Err(e) => {
             // if false {
             //     let trace = File::create("trace.out").unwrap();
             //     let mut trace = BufWriter::new(trace);
