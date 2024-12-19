@@ -105,7 +105,7 @@ fn llvm_home() -> Result<PathBuf, anyhow::Error> {
     Ok(home_dir
         .join(".cache")
         .join("solana")
-        .join("v1.38")
+        .join("v1.43")
         .join("platform-tools")
         .join("llvm"))
 }
