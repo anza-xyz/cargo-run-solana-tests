@@ -12,7 +12,7 @@ use {
         loaded_programs::{LoadProgramMetrics, ProgramCacheEntryType, ProgramCacheForTxBatch},
         sysvar_cache::SysvarCache,
     },
-    solana_rbpf::{elf::Executable, error::ProgramResult, static_analysis::Analysis},
+    solana_sbpf::{elf::Executable, error::ProgramResult, static_analysis::Analysis},
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount},
         bpf_loader_upgradeable,
@@ -237,13 +237,15 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         }
     });
     let result = {
+        let dummy_callback = |_key: &Pubkey| 100;
         let mut program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
         let env_config = EnvironmentConfig::new(
             Hash::new_unique(),
-            None,
-            None,
+            5000,
+            10000000,
+            &dummy_callback,
+            // All enabled will permit execution of every SBPF version
             Arc::new(FeatureSet::all_enabled()),
-            0,
             &sysvar_cache,
         );
 

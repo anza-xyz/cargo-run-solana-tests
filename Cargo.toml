@@ -14,13 +14,13 @@ publish = false
 [dependencies]
 anyhow = "1.0"
 regex = "1.4.5"
-solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana-compute-budget = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana-sdk = { git = "https://github.com/anza-xyz/agave.git", rev = "ea10d2e5347d12b7966529529004e7a34a43e215" }
-solana_rbpf = "=0.8.5"
+solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-compute-budget = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-sdk = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-sbpf = "=0.9.0"
 structopt = { version = "0.3", default-features = false }
 
 [package.metadata.docs.rs]
@@ -29,3 +29,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [[bin]]
 name = "cargo-run-solana-tests"
 path = "src/main.rs"
+
+[patch.crates-io]
+solana-instruction = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
+solana-pubkey = { git = "https://github.com/anza-xyz/agave.git", rev = "30111d02ee7055faa669821b0a203141655b149a" }
