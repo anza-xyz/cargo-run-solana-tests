@@ -53,7 +53,7 @@ impl<'a, 'b> LazyAnalysis<'a, 'b> {
         }
     }
 
-    fn analyze(&mut self) -> &Analysis {
+    fn analyze(&mut self) -> &Analysis<'_> {
         if let Some(ref analysis) = self.analysis {
             return analysis;
         }
@@ -302,7 +302,13 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         .unwrap();
 
         let start_time = Instant::now();
+
+        #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
         let (instruction_count, result) = vm.execute_program(&verified_executable, false);
+
+        #[cfg(any(target_os = "windows", not(target_arch = "x86_64")))]
+        let (instruction_count, result) = vm.execute_program(&verified_executable, true);
+
         println!(
             "Executed {} {} instructions in {:.2}s.",
             path.to_string_lossy(),
@@ -385,7 +391,7 @@ fn main() {
 
     let opt = Opt::from_iter(&args);
     if let Err(e) = run_tests(opt) {
-        eprintln!("error: {:#}", e);
+        eprintln!("error: {e:#}");
         exit(1);
     }
 }
