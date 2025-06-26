@@ -1,29 +1,29 @@
 use {
     anyhow::{anyhow, Context},
     regex::Regex,
+    solana_account::{AccountSharedData, ReadableAccount},
     solana_bpf_loader_program::{
         calculate_heap_cost, create_vm, load_program_from_bytes,
-        serialization::serialize_parameters, syscalls::create_program_runtime_environment_v1,
+        syscalls::create_program_runtime_environment_v1,
     },
-    solana_compute_budget::compute_budget::ComputeBudget,
+    solana_clock::Slot,
+    solana_hash::Hash,
     solana_log_collector::LogCollector,
+    solana_program_entrypoint::SUCCESS,
     solana_program_runtime::{
+        execution_budget::{SVMTransactionExecutionBudget, SVMTransactionExecutionCost},
         invoke_context::{EnvironmentConfig, InvokeContext},
         loaded_programs::{LoadProgramMetrics, ProgramCacheEntryType, ProgramCacheForTxBatch},
+        serialization::serialize_parameters,
         sysvar_cache::SysvarCache,
     },
+    solana_pubkey::Pubkey,
     solana_sbpf::{elf::Executable, error::ProgramResult, static_analysis::Analysis},
-    solana_sdk::{
-        account::{AccountSharedData, ReadableAccount},
-        bpf_loader_upgradeable,
-        entrypoint::SUCCESS,
-        feature_set::FeatureSet,
-        hash::Hash,
-        pubkey::Pubkey,
-        slot_history::Slot,
-        sysvar::rent::Rent,
-        transaction_context::TransactionContext,
-    },
+    solana_sdk_ids::{bpf_loader_upgradeable, native_loader},
+    solana_svm_callback::InvokeContextCallback,
+    solana_svm_feature_set::SVMFeatureSet,
+    solana_sysvar::rent::Rent,
+    solana_transaction_context::TransactionContext,
     std::{
         env,
         ffi::OsStr,
@@ -189,6 +189,10 @@ fn load_program<'a>(
     }
 }
 
+struct DummyCallBack {}
+
+impl InvokeContextCallback for DummyCallBack {}
+
 // Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let path = opt.file.with_extension("so");
@@ -206,7 +210,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let transaction_accounts = vec![
         (
             loader_id,
-            AccountSharedData::new(0, 0, &solana_sdk::native_loader::id()),
+            AccountSharedData::new(0, 0, &native_loader::id()),
         ),
         (
             Pubkey::new_unique(),
@@ -228,24 +232,24 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             {
                 callback(
                     transaction_context
-                        .get_account_at_index(index)
+                        .accounts()
+                        .try_borrow(index)
                         .unwrap()
-                        .borrow()
                         .data(),
                 );
             }
         }
     });
     let result = {
-        let dummy_callback = |_key: &Pubkey| 100;
+        let dummy_callback = DummyCallBack {};
         let mut program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
+        let all_features = SVMFeatureSet::all_enabled();
         let env_config = EnvironmentConfig::new(
             Hash::new_unique(),
             5000,
-            10000000,
             &dummy_callback,
             // All enabled will permit execution of every SBPF version
-            Arc::new(FeatureSet::all_enabled()),
+            &all_features,
             &sysvar_cache,
         );
 
@@ -254,11 +258,12 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             &mut program_cache_for_tx_batch,
             env_config,
             Some(logs.clone()),
-            ComputeBudget {
+            SVMTransactionExecutionBudget {
                 compute_unit_limit: i64::MAX as u64,
                 heap_size: opt.heap_size.unwrap(),
-                ..ComputeBudget::default()
+                ..SVMTransactionExecutionBudget::default()
             },
+            SVMTransactionExecutionCost::default(),
         );
         let instruction_data = vec![];
         invoke_context
@@ -274,6 +279,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
                 .get_current_instruction_context()
                 .unwrap(),
             true, // copy_account_data
+            false,
         )
         .unwrap();
 
@@ -284,7 +290,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         invoke_context
             .consume_checked(calculate_heap_cost(
                 heap_size,
-                invoke_context.get_compute_budget().heap_cost,
+                invoke_context.get_execution_cost().heap_cost,
             ))
             .unwrap();
 

@@ -14,13 +14,21 @@ publish = false
 [dependencies]
 anyhow = "1.0"
 regex = "1.4.5"
-solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9", features = ["svm-internal"] }
-solana-compute-budget = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-sdk = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-sbpf = "=0.10.0"
+solana-account = "2.2.1"
+solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec", features = ["svm-internal"] }
+solana-clock = "2.2.2"
+solana-hash = "2.3.0"
+solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-logger = "2.3.1"
+solana-program-entrypoint = "2.3.0"
+solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-pubkey = "2.4.0"
+solana-sbpf = "0.12.0"
+solana-sdk-ids = "2.2.1"
+solana-svm-callback = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-svm-feature-set = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-sysvar = "2.2.2"
+solana-transaction-context = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
 structopt = { version = "0.3", default-features = false }
 
 [package.metadata.docs.rs]
@@ -29,11 +37,3 @@ targets = ["x86_64-unknown-linux-gnu"]
 [[bin]]
 name = "cargo-run-solana-tests"
 path = "src/main.rs"
-
-[patch.crates-io]
-solana-cpi = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-instruction = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-msg = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-program-error = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-pubkey = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
-solana-sysvar-id = { git = "https://github.com/anza-xyz/agave.git", rev = "452f4600842159e099a84bf18cca19408da103c9" }
