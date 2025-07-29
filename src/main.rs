@@ -1,11 +1,9 @@
 use {
+    agave_syscalls::create_program_runtime_environment_v1,
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_account::{AccountSharedData, ReadableAccount},
-    solana_bpf_loader_program::{
-        calculate_heap_cost, create_vm, load_program_from_bytes,
-        syscalls::create_program_runtime_environment_v1,
-    },
+    solana_bpf_loader_program::{calculate_heap_cost, create_vm, load_program_from_bytes},
     solana_clock::Slot,
     solana_hash::Hash,
     solana_log_collector::LogCollector,
@@ -218,7 +216,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         ),
     ];
     let instruction_accounts = Vec::new();
-    let program_indices = [0, 1];
+    let program_indices = vec![0, 1];
     let logs = LogCollector::new_ref();
     let mut transaction_context =
         TransactionContext::new(transaction_accounts, Rent::default(), 1, 1);
@@ -268,9 +266,9 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let instruction_data = vec![];
         invoke_context
             .transaction_context
-            .get_next_instruction_context()
+            .get_next_instruction_context_mut()
             .unwrap()
-            .configure(&program_indices, &instruction_accounts, &instruction_data);
+            .configure(program_indices, instruction_accounts, &instruction_data);
         invoke_context.push().unwrap();
         let (_parameter_bytes, regions, account_lengths) = serialize_parameters(
             invoke_context.transaction_context,
