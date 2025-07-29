@@ -12,23 +12,24 @@ edition = "2018"
 publish = false
 
 [dependencies]
-anyhow = "1.0"
-regex = "1.4.5"
+agave-syscalls = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
+anyhow = "1.0.98"
+regex = "1.11.1"
 solana-account = "2.2.1"
-solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec", features = ["svm-internal"] }
+solana-bpf-loader-program = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422", features = ["svm-internal"] }
 solana-clock = "2.2.2"
 solana-hash = "2.3.0"
-solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
 solana-logger = "2.3.1"
 solana-program-entrypoint = "2.3.0"
-solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
 solana-pubkey = "2.4.0"
 solana-sbpf = "0.12.0"
 solana-sdk-ids = "2.2.1"
-solana-svm-callback = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
-solana-svm-feature-set = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-svm-callback = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
+solana-svm-feature-set = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
 solana-sysvar = "2.2.2"
-solana-transaction-context = { git = "https://github.com/anza-xyz/agave.git", rev = "e0bd9224fe60d8caa35bcca8daf6c8103ce424ec" }
+solana-transaction-context = { git = "https://github.com/anza-xyz/agave.git", rev = "d76c4371629e9425058afa2a8700347859fc6422" }
 structopt = { version = "0.3", default-features = false }
 
 [package.metadata.docs.rs]
