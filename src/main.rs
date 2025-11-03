@@ -6,12 +6,14 @@ use {
     solana_bpf_loader_program::{calculate_heap_cost, create_vm, load_program_from_bytes},
     solana_clock::Slot,
     solana_hash::Hash,
-    solana_log_collector::LogCollector,
     solana_program_entrypoint::SUCCESS,
     solana_program_runtime::{
         execution_budget::{SVMTransactionExecutionBudget, SVMTransactionExecutionCost},
         invoke_context::{EnvironmentConfig, InvokeContext},
-        loaded_programs::{LoadProgramMetrics, ProgramCacheEntryType, ProgramCacheForTxBatch},
+        loaded_programs::{
+            LoadProgramMetrics, ProgramCacheEntryType, ProgramCacheForTxBatch,
+            ProgramRuntimeEnvironments,
+        },
         serialization::serialize_parameters,
         sysvar_cache::SysvarCache,
     },
@@ -20,6 +22,7 @@ use {
     solana_sdk_ids::{bpf_loader_upgradeable, native_loader},
     solana_svm_callback::InvokeContextCallback,
     solana_svm_feature_set::SVMFeatureSet,
+    solana_svm_log_collector::LogCollector,
     solana_sysvar::rent::Rent,
     solana_transaction_context::TransactionContext,
     std::{
@@ -40,11 +43,11 @@ use {
 // https://github.com/rust-lang/rust/issues/74465
 struct LazyAnalysis<'a, 'b> {
     analysis: Option<Analysis<'a>>,
-    executable: &'a Executable<InvokeContext<'b>>,
+    executable: &'a Executable<InvokeContext<'b, 'b>>,
 }
 
 impl<'a, 'b> LazyAnalysis<'a, 'b> {
-    fn new(executable: &'a Executable<InvokeContext<'b>>) -> Self {
+    fn new(executable: &'a Executable<InvokeContext<'b, 'b>>) -> Self {
         Self {
             analysis: None,
             executable,
@@ -132,9 +135,9 @@ fn remove_bss_sections(module: &Path) -> Result<(), anyhow::Error> {
 fn load_program<'a>(
     filename: &Path,
     program_id: Pubkey,
-    invoke_context: &InvokeContext<'a>,
+    invoke_context: &InvokeContext<'a, 'a>,
     output_trace: bool,
-) -> Executable<InvokeContext<'a>> {
+) -> Executable<InvokeContext<'a, 'a>> {
     let mut file = File::open(filename).unwrap();
     let mut magic = [0u8; 4];
     file.read_exact(&mut magic).unwrap();
@@ -181,9 +184,10 @@ fn load_program<'a>(
     #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
     verified_executable.jit_compile().unwrap();
     unsafe {
-        std::mem::transmute::<Executable<InvokeContext<'static>>, Executable<InvokeContext<'a>>>(
-            verified_executable,
-        )
+        std::mem::transmute::<
+            Executable<InvokeContext<'static, 'static>>,
+            Executable<InvokeContext<'a, 'a>>,
+        >(verified_executable)
     }
 }
 
@@ -216,7 +220,6 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         ),
     ];
     let instruction_accounts = Vec::new();
-    let program_indices = vec![0, 1];
     let logs = LogCollector::new_ref();
     let mut transaction_context =
         TransactionContext::new(transaction_accounts, Rent::default(), 1, 1);
@@ -242,12 +245,15 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         let dummy_callback = DummyCallBack {};
         let mut program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
         let all_features = SVMFeatureSet::all_enabled();
+        let environments = ProgramRuntimeEnvironments::default();
         let env_config = EnvironmentConfig::new(
             Hash::new_unique(),
             5000,
             &dummy_callback,
             // All enabled will permit execution of every SBPF version
             &all_features,
+            &environments,
+            &environments,
             &sysvar_cache,
         );
 
@@ -259,24 +265,21 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
             SVMTransactionExecutionBudget {
                 compute_unit_limit: i64::MAX as u64,
                 heap_size: opt.heap_size.unwrap(),
-                ..SVMTransactionExecutionBudget::default()
+                ..SVMTransactionExecutionBudget::new_with_defaults(false)
             },
             SVMTransactionExecutionCost::default(),
         );
         let instruction_data = vec![];
         invoke_context
             .transaction_context
-            .get_next_instruction_context_mut()
-            .unwrap()
-            .configure(program_indices, instruction_accounts, &instruction_data);
-        invoke_context.push().unwrap();
-        let (_parameter_bytes, regions, account_lengths) = serialize_parameters(
-            invoke_context.transaction_context,
-            invoke_context
+            .configure_next_instruction_for_tests(1, instruction_accounts, instruction_data)?;
+        invoke_context.push()?;
+        let (_parameter_bytes, regions, account_lengths, _) = serialize_parameters(
+            &invoke_context
                 .transaction_context
-                .get_current_instruction_context()
-                .unwrap(),
+                .get_current_instruction_context()?,
             true, // copy_account_data
+            false,
             false,
         )
         .unwrap();
@@ -322,13 +325,10 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
         if opt.trace {
             println!("Trace:");
             let mut analysis = LazyAnalysis::new(&verified_executable);
-            if let Some(Some(syscall_context)) = vm.context_object_pointer.syscall_context.last() {
-                let trace = syscall_context.trace_log.as_slice();
-                analysis
-                    .analyze()
-                    .disassemble_trace_log(&mut std::io::stdout(), trace)
-                    .unwrap();
-            }
+            analysis
+                .analyze()
+                .disassemble_register_trace(&mut std::io::stdout(), &vm.register_trace)
+                .unwrap();
         }
         result
     };
@@ -385,7 +385,7 @@ struct Opt {
 }
 
 fn main() {
-    solana_logger::setup();
+    agave_logger::setup();
 
     let mut args = env::args().collect::<Vec<_>>();
     if let Some("run-solana-tests") = args.get(1).map(|a| a.as_str()) {
