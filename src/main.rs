@@ -3,11 +3,11 @@ use {
     anyhow::{anyhow, Context},
     regex::Regex,
     solana_account::{AccountSharedData, ReadableAccount},
-    solana_bpf_loader_program::{calculate_heap_cost, create_vm, load_program_from_bytes},
     solana_clock::Slot,
     solana_hash::Hash,
     solana_program_entrypoint::SUCCESS,
     solana_program_runtime::{
+        deploy::load_program_from_bytes,
         execution_budget::{SVMTransactionExecutionBudget, SVMTransactionExecutionCost},
         invoke_context::{EnvironmentConfig, InvokeContext},
         loaded_programs::{
@@ -16,6 +16,7 @@ use {
         },
         serialization::serialize_parameters,
         sysvar_cache::SysvarCache,
+        vm::{calculate_heap_cost, create_vm},
     },
     solana_pubkey::Pubkey,
     solana_sbpf::{elf::Executable, error::ProgramResult, static_analysis::Analysis},
@@ -222,7 +223,7 @@ fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
     let instruction_accounts = Vec::new();
     let logs = LogCollector::new_ref();
     let mut transaction_context =
-        TransactionContext::new(transaction_accounts, Rent::default(), 1, 1);
+        TransactionContext::new(transaction_accounts, Rent::default(), 1, 1, 1);
     let mut sysvar_cache = SysvarCache::default();
     sysvar_cache.fill_missing_entries(|pubkey, callback| {
         for index in 0..transaction_context.get_number_of_accounts() {
