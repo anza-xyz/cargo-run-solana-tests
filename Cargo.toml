@@ -12,23 +12,23 @@ edition = "2018"
 publish = false
 
 [dependencies]
-agave-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f", features = ["agave-unstable-api"] }
-agave-syscalls = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
+agave-logger = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6", features = ["agave-unstable-api"] }
+agave-syscalls = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6", features = ["agave-unstable-api"] }
 anyhow = "1.0.100"
 regex = "1.12.2"
 solana-account = "3.2.0"
 solana-clock = "3.0.0"
 solana-hash = "4.0.1"
 solana-program-entrypoint = "3.1.0"
-solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
+solana-program-runtime = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6" }
 solana-pubkey = "4.0.0"
-solana-sbpf = "0.14.1"
+solana-sbpf = "0.14.2"
 solana-sdk-ids = "3.1.0"
-solana-svm-callback = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
-solana-svm-feature-set = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
-solana-svm-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
+solana-svm-callback = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6" }
+solana-svm-feature-set = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6" }
+solana-svm-log-collector = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6" }
 solana-sysvar = "3.1.1"
-solana-transaction-context = { git = "https://github.com/anza-xyz/agave.git", rev = "f7a2b49cd47662e272a352173d89fc3323f5465f" }
+solana-transaction-context = { git = "https://github.com/anza-xyz/agave.git", rev = "e38802420c78ee60c6f8928f229deb10954c2ea6" }
 structopt = { version = "0.3", default-features = false }
 
 [package.metadata.docs.rs]
