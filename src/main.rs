@@ -198,13 +198,19 @@ impl InvokeContextCallback for DummyCallBack {}
 
 // Execute the given test file in Solana VM.
 fn run_tests(opt: Opt) -> Result<(), anyhow::Error> {
-    let path = opt.file.with_extension("so");
-    if !path.exists() {
+    let so_path = opt.file.with_extension("so");
+
+    let path = if so_path.exists() {
+        so_path
+    } else if opt.file.exists() {
+        opt.file
+    } else {
         return Err(anyhow!(
-            "No such file or directory: {}",
-            path.to_string_lossy()
+            "No such file or directory: {}. Also attempted {}.",
+            so_path.to_string_lossy(),
+            opt.file.display(),
         ));
-    }
+    };
 
     remove_bss_sections(&path)?;
 
